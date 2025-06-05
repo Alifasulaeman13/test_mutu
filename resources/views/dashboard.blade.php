@@ -1,23 +1,60 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
-    <style>
-        body { font-family: 'Instrument Sans', sans-serif; background: #fdfdfc; color: #1b1b18; }
-        .container { max-width: 400px; margin: 100px auto; background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px #0001; }
-        .logout-btn { background: #f53003; color: #fff; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; font-weight: 600; cursor: pointer; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Selamat datang di Dashboard!</h1>
-        <form method="POST" action="/logout">
-            @csrf
-            <button type="submit" class="logout-btn">Logout</button>
-        </form>
+@extends('layouts.app')
+
+@section('title', 'Dashboard')
+
+@section('page-title', 'Selamat Datang di Dashboard')
+
+@section('styles')
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.card-title {
+    font-size: 1rem;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+}
+
+.card-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+    .dashboard-cards {
+        grid-template-columns: 1fr;
+    }
+}
+@endsection
+
+@section('content')
+<div class="dashboard-cards">
+    <div class="card">
+        <div class="card-title">Total Pasien</div>
+        <div class="card-value">1,234</div>
     </div>
-</body>
-</html> 
+    <div class="card">
+        <div class="card-title">Dokter Aktif</div>
+        <div class="card-value">45</div>
+    </div>
+    <div class="card">
+        <div class="card-title">Kamar Tersedia</div>
+        <div class="card-value">28</div>
+    </div>
+    <div class="card">
+        <div class="card-title">Jadwal Hari Ini</div>
+        <div class="card-value">56</div>
+    </div>
+</div>
+@endsection 
