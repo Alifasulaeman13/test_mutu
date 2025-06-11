@@ -6,6 +6,7 @@
     <title>@yield('title') - SIMMUTU RS AZRA</title>
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         :root {
             --primary-color: #007774;
@@ -426,10 +427,14 @@
                     <i class="ri-user-line"></i>
                 </div>
                 <div class="profile-info">
-                    <div class="profile-name">Administrator</div>
+                    <div class="profile-name">{{ session('user_name') }}</div>
                     <div class="profile-status">
                         <span class="status-indicator"></span>
-                        Online
+                        @if(session('user_role'))
+                            {{ ucfirst(session('user_role')) }}
+                        @else
+                            Online
+                        @endif
                     </div>
                 </div>
             </div>
@@ -464,8 +469,18 @@
                                         <i class="ri-arrow-right-s-line submenu-arrow"></i>
                                     </a>
                                     <ul class="submenu nested" id="masterIndikatorSubmenu">
-                                        <li><a href="#" class="submenu-link">Sub Menu 1</a></li>
-                                        <li><a href="#" class="submenu-link">Sub Menu 2</a></li>
+                                        <li>
+                                            <a href="{{ route('master-indikator.index') }}" class="submenu-link {{ request()->routeIs('master-indikator.index') ? 'active' : '' }}">
+                                                <i class="ri-list-check-2 submenu-icon"></i>
+                                                Master Indikator
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('master-indikator.formula.index') }}" class="submenu-link {{ request()->routeIs('master-indikator.formula.*') ? 'active' : '' }}">
+                                                <i class="ri-functions submenu-icon"></i>
+                                                Formula
+                                            </a>
+                                        </li>
                                     </ul>
                                 </li>
                                 <li class="submenu-item">
@@ -492,6 +507,12 @@
                                         <i class="ri-arrow-right-s-line submenu-arrow"></i>
                                     </a>
                                     <ul class="submenu nested" id="laporanAnalisisSubmenu">
+                                        <li class="submenu-item">
+                                            <a href="{{ route('laporan-analisis.index') }}" class="submenu-link {{ request()->routeIs('laporan-analisis.*') ? 'active' : '' }}">
+                                                <i class="ri-file-list-3-line submenu-icon"></i>
+                                                Indikator Mutu
+                                            </a>
+                                        </li>
                                         <li><a href="#" class="submenu-link">Sub Menu 1</a></li>
                                         <li><a href="#" class="submenu-link">Sub Menu 2</a></li>
                                     </ul>
@@ -645,6 +666,12 @@
                                 Manage Role
                             </a>
                         </li>
+                        <li class="menu-item">
+                            <a href="{{ route('master.units.index') }}" class="menu-link {{ request()->routeIs('master.units.*') ? 'active' : '' }}">
+                                <i class="ri-building-2-line menu-icon"></i>
+                                Manajemen Unit
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -671,52 +698,108 @@
     </div>
 
     <script>
-        document.getElementById('menuToggle').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('active');
-        });
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle mobile menu
+            document.getElementById('menuToggle').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('active');
+            });
 
-        function toggleSubmenu(event, submenuId) {
-            event.preventDefault();
-            const submenu = document.getElementById(submenuId);
-            const menuLink = event.currentTarget;
+            // Get active menu from localStorage or URL
+            const currentPath = window.location.pathname;
+            const savedMenuState = JSON.parse(localStorage.getItem('menuState') || '{}');
             
-            // Toggle active class on menu link
-            menuLink.classList.toggle('active');
-            
-            // Toggle submenu visibility
-            if (submenu.classList.contains('show')) {
-                submenu.classList.remove('show');
-            } else {
-                // If it's a nested submenu, don't close other submenus
-                if (!submenu.classList.contains('nested')) {
-                    // Close all other submenus at the same level
-                    const allSubmenus = document.querySelectorAll('.submenu:not(.nested)');
-                    allSubmenus.forEach(menu => {
-                        if (menu.id !== submenuId) {
-                            menu.classList.remove('show');
-                            // Remove active class from other menu links
-                            const otherMenuLinks = menu.previousElementSibling;
-                            if (otherMenuLinks) {
-                                otherMenuLinks.classList.remove('active');
-                            }
-                        }
-                    });
+            // Function to open parent menus
+            function openParentMenus(element) {
+                const parentSubmenu = element.closest('.submenu');
+                if (parentSubmenu) {
+                    parentSubmenu.classList.add('show');
+                    const parentMenuLink = parentSubmenu.previousElementSibling;
+                    if (parentMenuLink && parentMenuLink.classList.contains('has-submenu')) {
+                        parentMenuLink.classList.add('active');
+                        openParentMenus(parentMenuLink);
+                    }
                 }
-                submenu.classList.add('show');
             }
-        }
 
-        // Close submenus when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.menu-link') && !event.target.closest('.submenu')) {
-                const allSubmenus = document.querySelectorAll('.submenu');
-                const allMenuLinks = document.querySelectorAll('.menu-link.has-submenu');
+            // Set initial active state
+            document.querySelectorAll('.menu-link, .submenu-link').forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href !== '#' && currentPath === href) {
+                    link.classList.add('active');
+                    openParentMenus(link);
+                }
+            });
+
+            function toggleSubmenu(event, submenuId) {
+                event.preventDefault();
+                const submenu = document.getElementById(submenuId);
+                const menuLink = event.currentTarget;
                 
-                allSubmenus.forEach(submenu => submenu.classList.remove('show'));
-                allMenuLinks.forEach(link => link.classList.remove('active'));
+                // Toggle active class on menu link
+                menuLink.classList.toggle('active');
+                
+                // Toggle submenu visibility
+                if (submenu.classList.contains('show')) {
+                    submenu.classList.remove('show');
+                    // Save state
+                    savedMenuState[submenuId] = false;
+                } else {
+                    // If it's a nested submenu, don't close other submenus
+                    if (!submenu.classList.contains('nested')) {
+                        // Close all other submenus at the same level
+                        const allSubmenus = document.querySelectorAll('.submenu:not(.nested)');
+                        allSubmenus.forEach(menu => {
+                            if (menu.id !== submenuId) {
+                                menu.classList.remove('show');
+                                const otherMenuLinks = menu.previousElementSibling;
+                                if (otherMenuLinks) {
+                                    otherMenuLinks.classList.remove('active');
+                                }
+                                savedMenuState[menu.id] = false;
+                            }
+                        });
+                    }
+                    submenu.classList.add('show');
+                    // Save state
+                    savedMenuState[submenuId] = true;
+                }
+
+                // Save menu state to localStorage
+                localStorage.setItem('menuState', JSON.stringify(savedMenuState));
             }
+
+            // Restore saved menu state
+            Object.entries(savedMenuState).forEach(([submenuId, isOpen]) => {
+                const submenu = document.getElementById(submenuId);
+                const menuLink = submenu?.previousElementSibling;
+                if (submenu && isOpen) {
+                    submenu.classList.add('show');
+                    if (menuLink) {
+                        menuLink.classList.add('active');
+                    }
+                }
+            });
+
+            // Only close submenus when clicking outside AND not clicking any menu items
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.menu-link') && 
+                    !event.target.closest('.submenu') && 
+                    !event.target.closest('.menu-item')) {
+                    const allSubmenus = document.querySelectorAll('.submenu');
+                    const allMenuLinks = document.querySelectorAll('.menu-link.has-submenu');
+                    
+                    allSubmenus.forEach(submenu => submenu.classList.remove('show'));
+                    allMenuLinks.forEach(link => link.classList.remove('active'));
+                    
+                    // Clear saved state
+                    localStorage.removeItem('menuState');
+                }
+            });
+
+            // Make toggleSubmenu available globally
+            window.toggleSubmenu = toggleSubmenu;
         });
     </script>
-    @yield('scripts')
+    @stack('scripts')
 </body>
 </html> 
