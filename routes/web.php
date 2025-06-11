@@ -3,7 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
+use App\Models\Unit;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Controllers\UnitController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\IndicatorController;
+use App\Http\Controllers\IndicatorFormulaController;
+use App\Http\Controllers\DailyIndicatorDataController;
 
 // Fungsi middleware untuk cek autentikasi
 function checkAuth($request, $next) {
@@ -47,16 +53,24 @@ Route::get('/login', function () {
 Route::post('/login', function (\Illuminate\Http\Request $request) {
         Log::info('Login attempt', [
             'username' => $request->input('username'),
-            'password' => $request->input('password'),
             'session' => session()->all()
         ]);
         
     $username = $request->input('username');
     $password = $request->input('password');
         
-    if ($username === 'admin' && $password === 'admin') {
+        $user = User::where('username', $username)
+            ->where('is_active', true)
+            ->first();
+        
+        if ($user && Hash::check($password, $user->password)) {
             Log::info('Login successful, setting session');
-            session(['is_logged_in' => true]);
+            session([
+                'is_logged_in' => true,
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'user_role' => $user->role->slug
+            ]);
             Log::info('Session set, redirecting to dashboard', [
                 'session' => session()->all()
             ]);
@@ -87,30 +101,13 @@ Route::post('/logout', function (\Illuminate\Http\Request $request) {
     });
 
     // Routes untuk manajemen users
-    Route::prefix('master-users')->group(function () {
-        // Route view utama
-        Route::get('/', function () {
-            return view('master_users.create');
-        })->name('master-users.index');
-
-        // Route untuk create user
-        Route::post('/', function (\Illuminate\Http\Request $request) {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'username' => 'required|string|max:255|unique:users',
-                'email' => 'required|email|max:255|unique:users',
-                'password' => 'required|string|min:6',
-                'role_id' => 'required|exists:roles,id',
-                'unit' => 'nullable|string|max:255',
-            ]);
-
-            $validated['password'] = bcrypt($validated['password']);
-            
-            User::create($validated);
-
-            return redirect()->route('master-users.index')
-                ->with('success', 'User berhasil ditambahkan');
-        })->name('master-users.store');
+    Route::prefix('master-users')->name('master-users.')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::get('/create', [UserController::class, 'create'])->name('create');
+        Route::post('/', [UserController::class, 'store'])->name('store');
+        Route::get('/{user}', [UserController::class, 'show'])->name('show');
+        Route::put('/{user}', [UserController::class, 'update'])->name('update');
+        Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
     });
 
     // Routes untuk manajemen role
@@ -131,6 +128,16 @@ Route::post('/logout', function (\Illuminate\Http\Request $request) {
             return redirect()->route('manage-role.index')
                 ->with('success', 'Role berhasil ditambahkan');
         })->name('manage-role.store');
+    });
+
+    // Routes untuk manajemen unit
+    Route::prefix('master-units')->group(function () {
+        Route::get('/', [UnitController::class, 'index'])->name('master.units.index');
+        Route::get('/create', [UnitController::class, 'create'])->name('master.units.create');
+        Route::post('/', [UnitController::class, 'store'])->name('master.units.store');
+        Route::get('/{unit}/edit', [UnitController::class, 'edit'])->name('master.units.edit');
+        Route::put('/{unit}', [UnitController::class, 'update'])->name('master.units.update');
+        Route::delete('/{unit}', [UnitController::class, 'destroy'])->name('master.units.destroy');
     });
 
     // API Routes (pindahkan ke luar prefix master-users)
@@ -269,4 +276,49 @@ Route::post('/logout', function (\Illuminate\Http\Request $request) {
             ], 500);
         }
     })->name('api.roles.delete');
+
+    // API Routes untuk unit
+    Route::get('/api/units', function () {
+        $units = Unit::orderBy('name')->get();
+        return response()->json($units);
+    })->name('api.units.index');
+
+    Route::get('/api/units/{id}', function ($id) {
+        try {
+            $unit = Unit::findOrFail($id);
+            return response()->json($unit);
+        } catch (\Exception $e) {
+            Log::error('Error fetching unit: ' . $e->getMessage());
+            return response()->json(['error' => 'Unit tidak ditemukan'], 404);
+        }
+    })->name('api.units.show');
+
+    // Routes untuk master indikator
+    Route::prefix('master-indikator')->name('master-indikator.')->middleware(['web'])->group(function () {
+        // Main Indicator Routes
+        Route::get('/', [IndicatorController::class, 'index'])->name('index');
+        Route::get('/create', [IndicatorController::class, 'create'])->name('create');
+        Route::post('/', [IndicatorController::class, 'store'])->name('store');
+        Route::get('/{indicator}/edit', [IndicatorController::class, 'edit'])->name('edit');
+        Route::put('/{indicator}', [IndicatorController::class, 'update'])->name('update');
+        Route::delete('/{indicator}', [IndicatorController::class, 'destroy'])->name('destroy');
+
+        // Formula Routes
+        Route::get('/formula', [IndicatorFormulaController::class, 'index'])->name('formula.index');
+        Route::get('/formula/create', [IndicatorFormulaController::class, 'create'])->name('formula.create');
+        Route::post('/formula', [IndicatorFormulaController::class, 'store'])->name('formula.store');
+        Route::get('/formula/{formula}/edit', [IndicatorFormulaController::class, 'edit'])->name('formula.edit');
+        Route::put('/formula/{formula}', [IndicatorFormulaController::class, 'update'])->name('formula.update');
+        Route::delete('/formula/{formula}', [IndicatorFormulaController::class, 'destroy'])->name('formula.destroy');
+    });
+
+    // Laporan & Analisis Routes
+    Route::prefix('laporan-analisis')->name('laporan-analisis.')->group(function () {
+        Route::get('/', [DailyIndicatorDataController::class, 'index'])->name('index');
+        Route::get('/create', [DailyIndicatorDataController::class, 'create'])->name('create');
+        Route::post('/', [DailyIndicatorDataController::class, 'store'])->name('store');
+        Route::get('/{dailyData}/edit', [DailyIndicatorDataController::class, 'edit'])->name('edit');
+        Route::put('/{dailyData}', [DailyIndicatorDataController::class, 'update'])->name('update');
+        Route::delete('/{dailyData}', [DailyIndicatorDataController::class, 'destroy'])->name('destroy');
+    });
 });

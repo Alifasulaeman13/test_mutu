@@ -111,11 +111,17 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="unit" class="form-label">Unit (Opsional)</label>
+                        <label for="unit_id" class="form-label">Unit</label>
                         <div class="input-wrapper">
                             <i class="ri-building-line input-icon"></i>
-                            <input type="text" name="unit" id="unit" value="{{ old('unit') }}" 
-                                   class="form-input with-icon">
+                            <select name="unit_id" id="unit_id" class="form-input with-icon">
+                                <option value="">Pilih Unit</option>
+                                @foreach(\App\Models\Unit::where('is_active', true)->orderBy('name')->get() as $unit)
+                                    <option value="{{ $unit->id }}" {{ old('unit_id') == $unit->id ? 'selected' : '' }}>
+                                        {{ $unit->name }} ({{ $unit->code }})
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
 
@@ -191,7 +197,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach(\App\Models\User::with('role')->get() as $user)
+                            @foreach(\App\Models\User::with(['role', 'unit'])->get() as $user)
                                 <tr class="table-row">
                                     <td class="column-cell">
                                         <div class="user-info">
@@ -200,26 +206,23 @@
                                             </div>
                                             <div class="user-details">
                                                 <div class="user-name">{{ $user->name }}</div>
-                                                <div class="user-meta">
-                                                    <span class="username">{{ $user->username }}</span>
-                                                </div>
+                                                <div class="user-username">{{ $user->username }}</div>
                                             </div>
                                         </div>
                                     </td>
+                                    <td class="column-cell">{{ $user->email }}</td>
                                     <td class="column-cell">
-                                        <div class="email-wrapper">
-                                            <i class="ri-mail-line email-icon"></i>
-                                            <span class="email-text">{{ $user->email }}</span>
-                                        </div>
+                                        <span class="role-badge">{{ $user->role->name }}</span>
                                     </td>
                                     <td class="column-cell">
-                                        <div class="role-badge" style="background-color: {{ '#' . substr(md5($user->role->name), 0, 6) }}20">
-                                            <span class="role-dot" style="background-color: {{ '#' . substr(md5($user->role->name), 0, 6) }}"></span>
-                                            {{ $user->role->name }}
-                                        </div>
-                                    </td>
-                                    <td class="column-cell">
-                                        <span class="unit-text">{{ $user->unit ?: '-' }}</span>
+                                        @if($user->unit)
+                                            <span class="unit-badge" title="{{ $user->unit->description }}">
+                                                {{ $user->unit->name }}
+                                                <small>({{ $user->unit->code }})</small>
+                                            </span>
+                                        @else
+                                            <span class="text-gray-400">-</span>
+                                        @endif
                                     </td>
                                     <td class="column-cell">
                                         <div class="status-badge {{ $user->is_active ? 'active' : 'inactive' }}">
@@ -315,10 +318,17 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="edit_unit" class="form-label">Unit (Opsional)</label>
+                    <label for="edit_unit_id" class="form-label">Unit</label>
                     <div class="input-wrapper">
                         <i class="ri-building-line input-icon"></i>
-                        <input type="text" name="unit" id="edit_unit" class="form-input with-icon">
+                        <select name="unit_id" id="edit_unit_id" class="form-input with-icon">
+                            <option value="">Pilih Unit</option>
+                            @foreach(\App\Models\Unit::where('is_active', true)->orderBy('name')->get() as $unit)
+                                <option value="{{ $unit->id }}" {{ old('unit_id') == $unit->id ? 'selected' : '' }}>
+                                    {{ $unit->name }} ({{ $unit->code }})
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
@@ -1311,7 +1321,7 @@ function editUser(userId) {
             document.getElementById('edit_username').value = user.username;
             document.getElementById('edit_email').value = user.email;
             document.getElementById('edit_role_id').value = user.role_id;
-            document.getElementById('edit_unit').value = user.unit || '';
+            document.getElementById('edit_unit_id').value = user.unit_id;
             document.getElementById('edit_is_active').checked = user.is_active;
             document.getElementById('statusText').textContent = user.is_active ? 'Aktif' : 'Non-aktif';
             
@@ -1367,7 +1377,7 @@ function updateUser() {
             email: document.getElementById('edit_email').value,
             password: document.getElementById('edit_password').value,
             role_id: document.getElementById('edit_role_id').value,
-            unit: document.getElementById('edit_unit').value,
+            unit_id: document.getElementById('edit_unit_id').value,
             is_active: document.getElementById('edit_is_active').checked
         })
     })
@@ -1451,7 +1461,7 @@ document.getElementById('searchTable').addEventListener('input', function(e) {
     
     rows.forEach(row => {
         const name = row.querySelector('.user-name').textContent.toLowerCase();
-        const username = row.querySelector('.username').textContent.toLowerCase();
+        const username = row.querySelector('.user-username').textContent.toLowerCase();
         const email = row.querySelector('.email').textContent.toLowerCase();
         
         if (name.includes(searchTerm) || username.includes(searchTerm) || email.includes(searchTerm)) {
