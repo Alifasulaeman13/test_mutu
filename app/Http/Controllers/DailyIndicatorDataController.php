@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DailyIndicatorData;
 use App\Models\Indicator;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class DailyIndicatorDataController extends Controller
 {
@@ -19,7 +20,7 @@ class DailyIndicatorDataController extends Controller
             ->whereYear('date', $currentYear);
 
         // Cek apakah user adalah Administrator
-        $isAdmin = auth()->user()->unit && auth()->user()->unit->code === 'ADM001';
+        $isAdmin = auth()->user()->isAdmin();
 
         // Jika bukan admin dan memiliki unit, filter berdasarkan unit tersebut
         if (!$isAdmin && auth()->user()->unit) {
@@ -32,13 +33,23 @@ class DailyIndicatorDataController extends Controller
             ->groupBy('indicator_id')
             ->map(function ($items) {
                 $firstItem = $items->first();
+                $indicator = $firstItem->indicator;
+                $period = $indicator->getCurrentReportingPeriod();
+                
                 return [
-                    'indikator' => $firstItem->indicator->name,
-                    'unit' => $firstItem->indicator->unit->name,
-                    'target' => $firstItem->indicator->target_percentage . '%',
+                    'indikator' => $indicator->name,
+                    'unit' => $indicator->unit->name,
+                    'target' => $indicator->target_percentage . '%',
                     'numerator' => $items->sum('numerator'),
                     'denominator' => $items->sum('denominator'),
-                    'total' => $items->avg('achievement_percentage')
+                    'total' => $items->avg('achievement_percentage'),
+                    'periode' => [
+                        'mulai' => $period['start_date'],
+                        'selesai' => $period['end_date'],
+                        'bulan' => Carbon::create()->month($period['month'])->format('F'),
+                        'tahun' => $period['year']
+                    ],
+                    'status_periode' => $indicator->isWithinReportingPeriod() ? 'Aktif' : 'Tidak Aktif'
                 ];
             })
             ->values();
@@ -56,7 +67,15 @@ class DailyIndicatorDataController extends Controller
             $query->where('unit_id', auth()->user()->unit->id);
         }
 
-        $indicators = $query->get();
+        $indicators = $query->get()->filter(function($indicator) {
+            return $indicator->isWithinReportingPeriod();
+        });
+
+        if ($indicators->isEmpty()) {
+            return redirect()->route('laporan-analisis.index')
+                ->with('error', 'Tidak ada indikator yang dapat diisi pada periode ini');
+        }
+
         return view('pages.laporan&analisis.create', compact('indicators'));
     }
 
@@ -82,6 +101,13 @@ class DailyIndicatorDataController extends Controller
         }
 
         $indicator = Indicator::with('activeFormula')->find($request->indicator_id);
+
+        // Cek periode pengisian
+        if (!$indicator->isWithinReportingPeriod()) {
+            return back()->withErrors(['date' => 'Periode pengisian data sudah berakhir'])
+                ->withInput();
+        }
+
         $formula = $indicator->activeFormula;
 
         if ($formula) {
@@ -118,6 +144,12 @@ class DailyIndicatorDataController extends Controller
             }
         }
 
+        // Cek periode pengisian
+        if (!$dailyData->indicator->isWithinReportingPeriod()) {
+            return redirect()->route('laporan-analisis.index')
+                ->with('error', 'Periode pengisian data sudah berakhir');
+        }
+
         $indicators = Indicator::with(['activeFormula', 'unit'])->get();
         return view('pages.laporan&analisis.edit', compact('dailyData', 'indicators'));
     }
@@ -144,6 +176,13 @@ class DailyIndicatorDataController extends Controller
         }
 
         $indicator = Indicator::with('activeFormula')->find($request->indicator_id);
+
+        // Cek periode pengisian
+        if (!$indicator->isWithinReportingPeriod()) {
+            return back()->withErrors(['date' => 'Periode pengisian data sudah berakhir'])
+                ->withInput();
+        }
+
         $formula = $indicator->activeFormula;
 
         if ($formula) {
@@ -179,6 +218,12 @@ class DailyIndicatorDataController extends Controller
                 return redirect()->route('laporan-analisis.index')
                     ->with('error', 'Anda tidak memiliki akses untuk menghapus data ini');
             }
+        }
+
+        // Cek periode pengisian
+        if (!$dailyData->indicator->isWithinReportingPeriod()) {
+            return redirect()->route('laporan-analisis.index')
+                ->with('error', 'Periode pengisian data sudah berakhir');
         }
 
         $dailyData->delete();

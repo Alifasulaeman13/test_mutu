@@ -427,11 +427,11 @@
                     <i class="ri-user-line"></i>
                 </div>
                 <div class="profile-info">
-                    <div class="profile-name">{{ session('user_name') }}</div>
+                    <div class="profile-name">{{ Auth::user()->name }}</div>
                     <div class="profile-status">
                         <span class="status-indicator"></span>
-                        @if(session('user_role'))
-                            {{ ucfirst(session('user_role')) }}
+                        @if(Auth::user()->role)
+                            {{ Auth::user()->role->name }}
                         @else
                             Online
                         @endif

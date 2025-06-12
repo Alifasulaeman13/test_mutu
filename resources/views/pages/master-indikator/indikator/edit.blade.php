@@ -70,10 +70,35 @@
             </div>
 
             <div class="form-group">
+                <label for="reporting_start_day" class="form-label">Tanggal Mulai Periode</label>
+                <input type="number" name="reporting_start_day" id="reporting_start_day"
+                       class="form-input @error('reporting_start_day') is-invalid @enderror"
+                       value="{{ old('reporting_start_day', $indicator->reporting_start_day) }}" min="1" max="31" required>
+                @error('reporting_start_day')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+            <div class="form-group">
+                <label for="reporting_end_day" class="form-label">Tanggal Selesai Periode</label>
+                <input type="number" name="reporting_end_day" id="reporting_end_day"
+                       class="form-input @error('reporting_end_day') is-invalid @enderror"
+                       value="{{ old('reporting_end_day', $indicator->reporting_end_day) }}" min="1" max="31" required>
+                @error('reporting_end_day')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+            <div class="form-group">
                 <div class="form-check">
-                    <input type="checkbox" name="is_active" id="is_active" class="form-check-input"
-                        value="1" {{ old('is_active', $indicator->is_active) ? 'checked' : '' }}>
-                    <label for="is_active" class="form-check-label">Aktif</label>
+                    <input type="checkbox" class="form-check-input" id="is_period_active"
+                           name="is_period_active" {{ old('is_period_active', $indicator->is_period_active) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="is_period_active">Aktifkan Periode</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="is_active"
+                           name="is_active" {{ old('is_active', $indicator->is_active) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="is_active">Status Aktif</label>
                 </div>
             </div>
 
