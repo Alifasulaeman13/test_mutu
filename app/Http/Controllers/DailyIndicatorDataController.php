@@ -8,17 +8,55 @@ use Illuminate\Http\Request;
 
 class DailyIndicatorDataController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $dailyData = DailyIndicatorData::with('indicator.unit')
-            ->orderBy('date', 'desc')
-            ->get();
-        return view('pages.laporan&analisis.index', compact('dailyData'));
+        $currentMonth = $request->get('bulan', date('n'));
+        $currentYear = $request->get('tahun', date('Y'));
+
+        // Base query
+        $query = DailyIndicatorData::with('indicator.unit')
+            ->whereMonth('date', $currentMonth)
+            ->whereYear('date', $currentYear);
+
+        // Cek apakah user adalah Administrator
+        $isAdmin = auth()->user()->unit && auth()->user()->unit->code === 'ADM001';
+
+        // Jika bukan admin dan memiliki unit, filter berdasarkan unit tersebut
+        if (!$isAdmin && auth()->user()->unit) {
+            $query->whereHas('indicator', function($q) {
+                $q->where('unit_id', auth()->user()->unit->id);
+            });
+        }
+
+        $dailyData = $query->get()
+            ->groupBy('indicator_id')
+            ->map(function ($items) {
+                $firstItem = $items->first();
+                return [
+                    'indikator' => $firstItem->indicator->name,
+                    'unit' => $firstItem->indicator->unit->name,
+                    'target' => $firstItem->indicator->target_percentage . '%',
+                    'numerator' => $items->sum('numerator'),
+                    'denominator' => $items->sum('denominator'),
+                    'total' => $items->avg('achievement_percentage')
+                ];
+            })
+            ->values();
+
+        return view('pages.laporan&analisis.index', compact('dailyData', 'currentMonth', 'currentYear'));
     }
 
     public function create()
     {
-        $indicators = Indicator::with(['activeFormula', 'unit'])->get();
+        // Base query
+        $query = Indicator::with(['activeFormula', 'unit']);
+
+        // Jika user memiliki unit, filter berdasarkan unit tersebut
+        if (auth()->user()->unit) {
+            $query->where('unit_id', auth()->user()->unit->id);
+        }
+
+        $indicators = $query->get();
         return view('pages.laporan&analisis.create', compact('indicators'));
     }
 
@@ -31,8 +69,20 @@ class DailyIndicatorDataController extends Controller
             'denominator' => 'required|integer|min:1',
         ]);
 
-        $indicator = Indicator::find($request->indicator_id);
-        $formula = $indicator->activeFormula();
+        // Cek akses user ke indikator
+        if (auth()->user()->unit) {
+            $indicator = Indicator::where('id', $request->indicator_id)
+                ->where('unit_id', auth()->user()->unit->id)
+                ->first();
+
+            if (!$indicator) {
+                return back()->withErrors(['indicator_id' => 'Anda tidak memiliki akses ke indikator ini'])
+                    ->withInput();
+            }
+        }
+
+        $indicator = Indicator::with('activeFormula')->find($request->indicator_id);
+        $formula = $indicator->activeFormula;
 
         if ($formula) {
             $achievement = $formula->calculateResult($request->numerator, $request->denominator);
@@ -42,7 +92,7 @@ class DailyIndicatorDataController extends Controller
 
         $validated['achievement_percentage'] = $achievement;
 
-        // Check for duplicate entry
+        // Cek duplikasi data
         $exists = DailyIndicatorData::where('indicator_id', $request->indicator_id)
             ->where('date', $request->date)
             ->exists();
@@ -60,6 +110,14 @@ class DailyIndicatorDataController extends Controller
 
     public function edit(DailyIndicatorData $dailyData)
     {
+        // Cek akses user ke indikator
+        if (auth()->user()->unit) {
+            if ($dailyData->indicator->unit_id !== auth()->user()->unit->id) {
+                return redirect()->route('laporan-analisis.index')
+                    ->with('error', 'Anda tidak memiliki akses ke data ini');
+            }
+        }
+
         $indicators = Indicator::with(['activeFormula', 'unit'])->get();
         return view('pages.laporan&analisis.edit', compact('dailyData', 'indicators'));
     }
@@ -73,8 +131,20 @@ class DailyIndicatorDataController extends Controller
             'denominator' => 'required|integer|min:1',
         ]);
 
-        $indicator = Indicator::find($request->indicator_id);
-        $formula = $indicator->activeFormula();
+        // Cek akses user ke indikator
+        if (auth()->user()->unit) {
+            $indicator = Indicator::where('id', $request->indicator_id)
+                ->where('unit_id', auth()->user()->unit->id)
+                ->first();
+
+            if (!$indicator) {
+                return back()->withErrors(['indicator_id' => 'Anda tidak memiliki akses ke indikator ini'])
+                    ->withInput();
+            }
+        }
+
+        $indicator = Indicator::with('activeFormula')->find($request->indicator_id);
+        $formula = $indicator->activeFormula;
 
         if ($formula) {
             $achievement = $formula->calculateResult($request->numerator, $request->denominator);
@@ -84,7 +154,7 @@ class DailyIndicatorDataController extends Controller
 
         $validated['achievement_percentage'] = $achievement;
 
-        // Check for duplicate entry, excluding current record
+        // Cek duplikasi data, kecuali data saat ini
         $exists = DailyIndicatorData::where('indicator_id', $request->indicator_id)
             ->where('date', $request->date)
             ->where('id', '!=', $dailyData->id)
@@ -103,6 +173,14 @@ class DailyIndicatorDataController extends Controller
 
     public function destroy(DailyIndicatorData $dailyData)
     {
+        // Cek akses user ke indikator
+        if (auth()->user()->unit) {
+            if ($dailyData->indicator->unit_id !== auth()->user()->unit->id) {
+                return redirect()->route('laporan-analisis.index')
+                    ->with('error', 'Anda tidak memiliki akses untuk menghapus data ini');
+            }
+        }
+
         $dailyData->delete();
         return redirect()->route('laporan-analisis.index')
             ->with('success', 'Data harian berhasil dihapus');

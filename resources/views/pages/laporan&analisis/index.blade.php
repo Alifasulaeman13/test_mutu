@@ -110,30 +110,6 @@
     color: var(--primary-color);
 }
 
-.month-header {
-    text-align: center;
-    font-weight: 500;
-    background-color: #f8fafc;
-    padding: 8px;
-    border-bottom: 1px solid #e2e8f0;
-    font-size: 0.875rem;
-}
-
-.dates-row {
-    display: flex;
-    flex-wrap: nowrap;
-    border-bottom: 1px solid #e2e8f0;
-    font-size: 0.875rem;
-}
-
-.date-cell {
-    min-width: 30px;
-    text-align: center;
-    padding: 4px;
-    border-right: 1px solid #e2e8f0;
-    font-size: 0.875rem;
-}
-
 .month-selector {
     display: flex;
     align-items: center;
@@ -154,15 +130,66 @@
     border-color: var(--primary-color);
     box-shadow: 0 0 0 1px var(--primary-color);
 }
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.modern-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.column-header {
+    background-color: #f8fafc;
+    padding: 1rem;
+    font-weight: 600;
+    color: #475569;
+    text-align: left;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.column-cell {
+    padding: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    background-color: white;
+}
+
+.table-row:hover .column-cell {
+    background-color: #f8fafc;
+}
+
+.achievement-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.achievement-badge.success {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.achievement-badge.warning {
+    background-color: #fef3c7;
+    color: #d97706;
+}
+
+.achievement-badge.danger {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
 @endsection
 
 @section('content')
 @php
     $currentMonth = request('bulan', date('n'));
     $currentYear = request('tahun', date('Y'));
-    
-    // Get number of days in current month
-    $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $currentMonth, $currentYear);
     
     $months = [
         1 => 'Januari',
@@ -179,33 +206,37 @@
         12 => 'Desember'
     ];
 
-    $columns = [
-        ['label' => 'NO', 'field' => 'no', 'width' => '50px'],
-        ['label' => 'INDIKATOR', 'field' => 'indikator', 'width' => '300px'],
-        ['label' => 'TARGET', 'field' => 'target', 'width' => '80px'],
-        ['label' => 'N/D', 'field' => 'nd', 'width' => '80px'],
-    ];
-
-    // Add date columns
-    for ($i = 1; $i <= $daysInMonth; $i++) {
-        $columns[] = ['label' => $i, 'field' => 'day_' . $i, 'width' => '40px'];
-    }
-    
-    $columns[] = ['label' => 'TOTAL', 'field' => 'total', 'width' => '80px'];
+    // Cek apakah user adalah Administrator
+    $isAdmin = auth()->user()->unit && auth()->user()->unit->code === 'ADM001';
 @endphp
 
 <div class="dashboard-section">
     <div class="section-header">
         <div class="header-title">
             <i class="ri-file-list-3-line"></i>
-            Sensus Data Harian
+            Laporan Indikator Mutu
+            @if($isAdmin)
+                <span class="badge badge-primary ml-2">Administrator View</span>
+            @endif
         </div>
         <div class="header-actions">
+            <div class="month-selector">
+                <select name="bulan" form="filterForm" onchange="this.form.submit()">
+                    @foreach($months as $num => $name)
+                        <option value="{{ $num }}" {{ $currentMonth == $num ? 'selected' : '' }}>
+                            {{ $name }}
+                        </option>
+                    @endforeach
+                </select>
+                <select name="tahun" form="filterForm" onchange="this.form.submit()">
+                    @for($year = date('Y'); $year >= date('Y')-2; $year--)
+                        <option value="{{ $year }}" {{ $currentYear == $year ? 'selected' : '' }}>
+                            {{ $year }}
+                        </option>
+                    @endfor
+                </select>
+            </div>
             <div class="action-buttons">
-                <button class="btn btn-outline">
-                    <i class="ri-filter-3-line"></i>
-                    Filter
-                </button>
                 <x-action-dropdown>
                     <a href="{{ route('laporan-analisis.create') }}" class="action-dropdown-item">
                         <i class="ri-add-line"></i>
@@ -230,21 +261,48 @@
     </div>
     
     <div class="section-body">
-        <div style="margin-bottom: 1rem;">
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
-                <div class="search-wrapper">
-                    <i class="ri-search-line"></i>
-                    <input type="text" class="search-input" placeholder="Cari indikator..." name="search" form="filterForm">
-                </div>
-            </div>
+        <div class="table-container">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th class="column-header">NO</th>
+                        <th class="column-header">INDIKATOR</th>
+                        <th class="column-header">UNIT</th>
+                        <th class="column-header">TARGET</th>
+                        <th class="column-header">NUMERATOR</th>
+                        <th class="column-header">DENOMINATOR</th>
+                        <th class="column-header">PENCAPAIAN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($dailyData as $index => $data)
+                        <tr class="table-row">
+                            <td class="column-cell">{{ $index + 1 }}</td>
+                            <td class="column-cell">{{ $data['indikator'] }}</td>
+                            <td class="column-cell">{{ $data['unit'] }}</td>
+                            <td class="column-cell">{{ $data['target'] }}</td>
+                            <td class="column-cell">{{ $data['numerator'] }}</td>
+                            <td class="column-cell">{{ $data['denominator'] }}</td>
+                            <td class="column-cell">
+                                @php
+                                    $achievement = $data['total'];
+                                    $badgeClass = $achievement >= 80 ? 'success' : ($achievement >= 60 ? 'warning' : 'danger');
+                                @endphp
+                                <span class="achievement-badge {{ $badgeClass }}">
+                                    {{ number_format($achievement, 2) }}%
+                                </span>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="column-cell text-center">
+                                Tidak ada data untuk periode ini
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-        <x-table-paginate 
-            :columns="$columns" 
-            :data="$dailyData ?? []" 
-            :pagination="$dailyData->links() ?? null" 
-            :bulan="$currentMonth"
-            :tahun="$currentYear"
-        />
     </div>
 </div>
 

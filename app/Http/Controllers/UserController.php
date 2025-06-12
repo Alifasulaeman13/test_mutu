@@ -39,7 +39,7 @@ class UserController extends Controller
         ]);
 
         // Set default values
-        $validated['is_active'] = $request->has('is_active');
+        $validated['is_active'] = $request->boolean('is_active');
         $validated['password'] = Hash::make($validated['password']);
 
         DB::transaction(function () use ($validated) {

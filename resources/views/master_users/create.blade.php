@@ -125,6 +125,17 @@
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <div class="toggle-wrapper">
+                            <label class="toggle">
+                                <input type="checkbox" name="is_active" id="is_active" value="1" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-label" id="statusText">Aktif</span>
+                        </div>
+                    </div>
+
                     <div class="flex justify-end">
                         <button type="submit" class="btn btn-primary">
                             <i class="ri-save-line"></i>
@@ -1289,6 +1300,12 @@ th {
 </style>
 
 <script>
+// Toggle status text
+document.getElementById('is_active').addEventListener('change', function(e) {
+    document.getElementById('statusText').textContent = this.checked ? 'Aktif' : 'Non-aktif';
+});
+
+// Toggle password visibility
 function togglePassword(inputId) {
     const input = document.getElementById(inputId);
     const icon = input.parentElement.querySelector('.input-action i');
@@ -1306,6 +1323,8 @@ function editUser(userId) {
     // Show loading state
     showLoading();
     
+    console.log('Fetching user data for ID:', userId);
+    
     // Fetch user data
     fetch(`/api/users/${userId}`)
         .then(response => {
@@ -1315,6 +1334,8 @@ function editUser(userId) {
             return response.json();
         })
         .then(user => {
+            console.log('User data received:', user);
+            
             // Fill form with user data
             document.getElementById('edit_user_id').value = user.id;
             document.getElementById('edit_name').value = user.name;
@@ -1333,7 +1354,7 @@ function editUser(userId) {
             hideLoading();
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('Error fetching user:', error);
             hideLoading();
             // Show error message
             alert('Terjadi kesalahan saat mengambil data user');
@@ -1349,6 +1370,19 @@ function closeEditModal() {
 
 function updateUser() {
     const userId = document.getElementById('edit_user_id').value;
+    
+    // Get form data
+    const formData = {
+        name: document.getElementById('edit_name').value,
+        username: document.getElementById('edit_username').value,
+        email: document.getElementById('edit_email').value,
+        password: document.getElementById('edit_password').value,
+        role_id: document.getElementById('edit_role_id').value,
+        unit_id: document.getElementById('edit_unit_id').value,
+        is_active: document.getElementById('edit_is_active').checked
+    };
+    
+    console.log('Updating user with data:', formData);
     
     // Show loading state
     Swal.fire({
@@ -1371,15 +1405,7 @@ function updateUser() {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': token
         },
-        body: JSON.stringify({
-            name: document.getElementById('edit_name').value,
-            username: document.getElementById('edit_username').value,
-            email: document.getElementById('edit_email').value,
-            password: document.getElementById('edit_password').value,
-            role_id: document.getElementById('edit_role_id').value,
-            unit_id: document.getElementById('edit_unit_id').value,
-            is_active: document.getElementById('edit_is_active').checked
-        })
+        body: JSON.stringify(formData)
     })
     .then(response => {
         if (!response.ok) {
@@ -1388,6 +1414,8 @@ function updateUser() {
         return response.json();
     })
     .then(data => {
+        console.log('Update response:', data);
+        
         if (data.success) {
             // Close modal
             closeEditModal();
@@ -1407,6 +1435,7 @@ function updateUser() {
                 location.reload();
             });
         } else {
+            console.error('Update failed:', data);
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
@@ -1415,10 +1444,11 @@ function updateUser() {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('Error updating user:', error);
         if (error.errors) {
             // Show validation errors with sweet alert
             const errorMessages = Object.values(error.errors).flat().join('\n');
+            console.error('Validation errors:', errorMessages);
             Swal.fire({
                 icon: 'error',
                 title: 'Error Validasi',
@@ -1433,11 +1463,6 @@ function updateUser() {
         }
     });
 }
-
-// Toggle status text
-document.getElementById('edit_is_active').addEventListener('change', function(e) {
-    document.getElementById('statusText').textContent = this.checked ? 'Aktif' : 'Non-aktif';
-});
 
 // Close modal when clicking overlay
 document.querySelector('.modal-overlay').addEventListener('click', closeEditModal);
