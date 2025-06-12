@@ -251,8 +251,8 @@ class IndicatorController extends Controller
             DB::beginTransaction();
 
             // Check if indicator has related data
-            if ($indicator->dailyData()->exists()) {
-                throw new \Exception('Indikator tidak dapat dihapus karena memiliki data harian terkait.');
+            if ($indicator->monthlyData()->exists()) {
+                throw new \Exception('Indikator tidak dapat dihapus karena memiliki data bulanan terkait.');
             }
 
             if ($indicator->formulas()->exists()) {

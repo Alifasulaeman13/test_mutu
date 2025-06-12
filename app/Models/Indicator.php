@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Carbon\Carbon;
 
 class Indicator extends Model
 {
@@ -34,10 +35,10 @@ class Indicator extends Model
         return $this->belongsTo(Unit::class);
     }
 
-    // Relationship with daily data
-    public function dailyData(): HasMany
+    // Relationship with monthly data
+    public function monthlyData(): HasMany
     {
-        return $this->hasMany(DailyIndicatorData::class);
+        return $this->hasMany(MonthlyIndicatorData::class);
     }
 
     // Relationship with formulas
@@ -56,55 +57,34 @@ class Indicator extends Model
     public function isWithinReportingPeriod(): bool
     {
         if (!$this->is_period_active) {
-            return true; // Jika periode tidak aktif, selalu bisa input
+            return false;
         }
 
-        $today = now();
-        $currentDay = $today->day;
-        $currentMonth = $today->month;
-        $currentYear = $today->year;
+        $now = Carbon::now();
+        $currentDay = $now->day;
 
-        // Jika hari ini di bulan yang sama dengan periode pelaporan
-        if ($currentDay >= $this->reporting_start_day && $currentDay <= $this->reporting_end_day) {
-            return true;
-        }
-
-        // Jika hari ini di bulan setelah periode pelaporan
-        if ($currentDay < $this->reporting_start_day) {
-            $lastMonth = $currentMonth - 1;
-            if ($lastMonth < 1) {
-                $lastMonth = 12;
-                $currentYear--;
-            }
-            
-            // Cek apakah hari ini masih dalam periode pelaporan bulan sebelumnya
-            return $currentDay <= $this->reporting_end_day;
-        }
-
-        return false;
+        return $currentDay >= $this->reporting_start_day && $currentDay <= $this->reporting_end_day;
     }
 
     // Get current reporting period
     public function getCurrentReportingPeriod(): array
     {
-        $today = now();
-        $currentMonth = $today->month;
-        $currentYear = $today->year;
+        $now = Carbon::now();
+        $currentDay = $now->day;
+        $currentMonth = $now->month;
+        $currentYear = $now->year;
 
-        // Jika hari ini sebelum tanggal mulai pelaporan
-        if ($today->day < $this->reporting_start_day) {
-            $currentMonth--;
-            if ($currentMonth < 1) {
-                $currentMonth = 12;
-                $currentYear--;
-            }
+        // Jika tanggal saat ini lebih besar dari tanggal selesai pelaporan,
+        // maka periode pelaporan adalah bulan berikutnya
+        if ($currentDay > $this->reporting_end_day) {
+            $now->addMonth();
+            $currentMonth = $now->month;
+            $currentYear = $now->year;
         }
 
         return [
             'month' => $currentMonth,
-            'year' => $currentYear,
-            'start_date' => $this->reporting_start_day,
-            'end_date' => $this->reporting_end_day
+            'year' => $currentYear
         ];
     }
 } 

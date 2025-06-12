@@ -11,6 +11,7 @@ use App\Http\Controllers\IndicatorController;
 use App\Http\Controllers\IndicatorFormulaController;
 use App\Http\Controllers\DailyIndicatorDataController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\MonthlyIndicatorDataController;
 
 // Fungsi middleware untuk cek autentikasi
 function checkAuth($request, $next) {
@@ -334,14 +335,14 @@ Route::post('/logout', function (\Illuminate\Http\Request $request) {
         Route::delete('/formula/{formula}', [IndicatorFormulaController::class, 'destroy'])->name('formula.destroy');
     });
 
-    // Laporan & Analisis Routes
-    Route::middleware(['auth'])->group(function () {
-        Route::get('/laporan-analisis', [DailyIndicatorDataController::class, 'index'])->name('laporan-analisis.index');
-        Route::get('/laporan-analisis/create', [DailyIndicatorDataController::class, 'create'])->name('laporan-analisis.create');
-        Route::post('/laporan-analisis', [DailyIndicatorDataController::class, 'store'])->name('laporan-analisis.store');
-        Route::get('/laporan-analisis/{dailyData}/edit', [DailyIndicatorDataController::class, 'edit'])->name('laporan-analisis.edit');
-        Route::put('/laporan-analisis/{dailyData}', [DailyIndicatorDataController::class, 'update'])->name('laporan-analisis.update');
-        Route::delete('/laporan-analisis/{dailyData}', [DailyIndicatorDataController::class, 'destroy'])->name('laporan-analisis.destroy');
+    // Routes untuk laporan dan analisis
+    Route::prefix('laporan-analisis')->name('laporan-analisis.')->group(function () {
+        Route::get('/', [MonthlyIndicatorDataController::class, 'index'])->name('index');
+        Route::get('/create', [MonthlyIndicatorDataController::class, 'create'])->name('create');
+        Route::post('/', [MonthlyIndicatorDataController::class, 'store'])->name('store');
+        Route::get('/{monthlyData}/edit', [MonthlyIndicatorDataController::class, 'edit'])->name('edit');
+        Route::put('/{monthlyData}', [MonthlyIndicatorDataController::class, 'update'])->name('update');
+        Route::delete('/{monthlyData}', [MonthlyIndicatorDataController::class, 'destroy'])->name('destroy');
     });
 });
 
@@ -362,11 +363,11 @@ Route::middleware('auth')->group(function () {
 
     // Laporan & Analisis Routes
     Route::prefix('laporan-analisis')->name('laporan-analisis.')->group(function () {
-        Route::get('/', [DailyIndicatorDataController::class, 'index'])->name('index');
-        Route::get('/create', [DailyIndicatorDataController::class, 'create'])->name('create');
-        Route::post('/', [DailyIndicatorDataController::class, 'store'])->name('store');
-        Route::get('/{dailyData}/edit', [DailyIndicatorDataController::class, 'edit'])->name('edit');
-        Route::put('/{dailyData}', [DailyIndicatorDataController::class, 'update'])->name('update');
-        Route::delete('/{dailyData}', [DailyIndicatorDataController::class, 'destroy'])->name('destroy');
+        Route::get('/', [MonthlyIndicatorDataController::class, 'index'])->name('index');
+        Route::get('/create', [MonthlyIndicatorDataController::class, 'create'])->name('create');
+        Route::post('/', [MonthlyIndicatorDataController::class, 'store'])->name('store');
+        Route::get('/{monthlyData}/edit', [MonthlyIndicatorDataController::class, 'edit'])->name('edit');
+        Route::put('/{monthlyData}', [MonthlyIndicatorDataController::class, 'update'])->name('update');
+        Route::delete('/{monthlyData}', [MonthlyIndicatorDataController::class, 'destroy'])->name('destroy');
     });
 });

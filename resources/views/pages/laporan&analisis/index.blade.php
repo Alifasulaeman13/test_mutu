@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Indikator Mutu')
-@section('page-title', 'Indikator Mutu')
+@section('title', 'Laporan & Analisis')
+@section('page-title', 'Laporan & Analisis')
 
 @section('styles')
 .dashboard-section {
@@ -184,6 +184,136 @@
     background-color: #fee2e2;
     color: #dc2626;
 }
+
+.filter-section {
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-default {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.badge-success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.badge-warning {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.badge-danger {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.btn-warning {
+    background: #fef9c3;
+    color: #854d0e;
+    border: 1px solid #fde047;
+}
+
+.btn-warning:hover {
+    background: #fef08a;
+}
+
+.btn-danger {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.btn-danger:hover {
+    background: #fecaca;
+}
+
+.flex {
+    display: flex;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.gap-4 {
+    gap: 1rem;
+}
+
+.items-end {
+    align-items: flex-end;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+.mb-0 {
+    margin-bottom: 0;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.form-select {
+    padding: 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    min-width: 150px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.py-4 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.table-row-empty {
+    background-color: #f8fafc;
+}
+
+.text-muted {
+    color: #94a3b8;
+}
+
+.badge-secondary {
+    background: #e2e8f0;
+    color: #475569;
+}
 @endsection
 
 @section('content')
@@ -213,56 +343,53 @@
 <div class="dashboard-section">
     <div class="section-header">
         <div class="header-title">
-            <i class="ri-file-list-3-line"></i>
-            Laporan Indikator Mutu
-            @if($isAdmin)
-                <span class="badge badge-primary ml-2">Administrator View</span>
-            @endif
+            <i class="ri-file-chart-line"></i>
+            Data Indikator
         </div>
-        <div class="header-actions">
-            <div class="month-selector">
-                <select name="bulan" form="filterForm" onchange="this.form.submit()">
-                    @foreach($months as $num => $name)
-                        <option value="{{ $num }}" {{ $currentMonth == $num ? 'selected' : '' }}>
-                            {{ $name }}
-                        </option>
-                    @endforeach
-                </select>
-                <select name="tahun" form="filterForm" onchange="this.form.submit()">
-                    @for($year = date('Y'); $year >= date('Y')-2; $year--)
-                        <option value="{{ $year }}" {{ $currentYear == $year ? 'selected' : '' }}>
-                            {{ $year }}
-                        </option>
-                    @endfor
-                </select>
-            </div>
-            <div class="action-buttons">
-                <x-action-dropdown>
-                    <a href="{{ route('laporan-analisis.create') }}" class="action-dropdown-item">
-                        <i class="ri-add-line"></i>
-                        Tambah Data
-                    </a>
-                    <a href="#" class="action-dropdown-item">
-                        <i class="ri-file-excel-2-line"></i>
-                        Export Excel
-                    </a>
-                    <a href="#" class="action-dropdown-item">
-                        <i class="ri-file-pdf-line"></i>
-                        Export PDF
-                    </a>
-                    <div class="action-dropdown-divider"></div>
-                    <a href="#" class="action-dropdown-item">
-                        <i class="ri-printer-line"></i>
-                        Print
-                    </a>
-                </x-action-dropdown>
-            </div>
+        <div>
+            <a href="{{ route('laporan-analisis.create') }}" class="btn btn-primary">
+                <i class="ri-add-line"></i>
+                Tambah Data
+            </a>
         </div>
     </div>
     
     <div class="section-body">
-        <div class="table-container">
-            <table class="modern-table">
+        <div class="filter-section mb-4">
+            <form action="{{ route('laporan-analisis.index') }}" method="GET" class="flex gap-4">
+                <div class="form-group mb-0">
+                    <label for="bulan" class="form-label">Bulan</label>
+                    <select name="bulan" id="bulan" class="form-select" onchange="this.form.submit()">
+                        @foreach(range(1, 12) as $month)
+                            <option value="{{ $month }}" {{ $currentMonth == $month ? 'selected' : '' }}>
+                                {{ date('F', mktime(0, 0, 0, $month, 1)) }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group mb-0">
+                    <label for="tahun" class="form-label">Tahun</label>
+                    <select name="tahun" id="tahun" class="form-select" onchange="this.form.submit()">
+                        @foreach(range(date('Y')-5, date('Y')+5) as $year)
+                            <option value="{{ $year }}" {{ $currentYear == $year ? 'selected' : '' }}>
+                                {{ $year }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group mb-0 flex items-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ri-filter-line"></i>
+                        Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table-default">
                 <thead>
                     <tr>
                         <th class="column-header">NO</th>
@@ -272,31 +399,85 @@
                         <th class="column-header">NUMERATOR</th>
                         <th class="column-header">DENOMINATOR</th>
                         <th class="column-header">PENCAPAIAN</th>
+                        <th class="column-header">PERIODE</th>
+                        <th class="column-header">STATUS</th>
+                        <th class="column-header">AKSI</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($dailyData as $index => $data)
-                        <tr class="table-row">
+                    @forelse($displayData as $index => $data)
+                        <tr class="table-row {{ !$data['has_data'] ? 'table-row-empty' : '' }}">
                             <td class="column-cell">{{ $index + 1 }}</td>
                             <td class="column-cell">{{ $data['indikator'] }}</td>
                             <td class="column-cell">{{ $data['unit'] }}</td>
                             <td class="column-cell">{{ $data['target'] }}</td>
-                            <td class="column-cell">{{ $data['numerator'] }}</td>
-                            <td class="column-cell">{{ $data['denominator'] }}</td>
                             <td class="column-cell">
-                                @php
-                                    $achievement = $data['total'];
-                                    $badgeClass = $achievement >= 80 ? 'success' : ($achievement >= 60 ? 'warning' : 'danger');
-                                @endphp
-                                <span class="achievement-badge {{ $badgeClass }}">
-                                    {{ number_format($achievement, 2) }}%
+                                @if($data['has_data'])
+                                    {{ $data['numerator'] }}
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td class="column-cell">
+                                @if($data['has_data'])
+                                    {{ $data['denominator'] }}
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td class="column-cell">
+                                @if($data['has_data'])
+                                    @php
+                                        $achievement = $data['total'];
+                                        $badgeClass = $achievement >= 80 ? 'success' : ($achievement >= 60 ? 'warning' : 'danger');
+                                    @endphp
+                                    <span class="badge badge-{{ $badgeClass }}">
+                                        {{ number_format($achievement, 2) }}%
+                                    </span>
+                                @else
+                                    <span class="badge badge-secondary">
+                                        Belum Ada Data
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="column-cell">
+                                {{ $data['periode']['bulan'] }} {{ $data['periode']['tahun'] }}
+                            </td>
+                            <td class="column-cell">
+                                <span class="badge badge-{{ $data['status_periode'] === 'Aktif' ? 'success' : 'warning' }}">
+                                    {{ $data['status_periode'] }}
                                 </span>
+                            </td>
+                            <td class="column-cell">
+                                <div class="flex gap-2">
+                                    @if($data['has_data'])
+                                        <a href="{{ route('laporan-analisis.edit', ['monthlyData' => $data['data_id']]) }}" 
+                                           class="btn btn-warning btn-sm">
+                                            <i class="ri-edit-line"></i>
+                                        </a>
+                                        <form action="{{ route('laporan-analisis.destroy', ['monthlyData' => $data['data_id']]) }}" 
+                                              method="POST" 
+                                              onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <a href="{{ route('laporan-analisis.create') }}?indicator_id={{ $data['id'] }}" 
+                                           class="btn btn-primary btn-sm">
+                                            <i class="ri-add-line"></i>
+                                            Input Data
+                                        </a>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="column-cell text-center">
-                                Tidak ada data untuk periode ini
+                            <td colspan="10" class="text-center py-4">
+                                Tidak ada indikator yang tersedia
                             </td>
                         </tr>
                     @endforelse
@@ -306,7 +487,6 @@
     </div>
 </div>
 
-<form id="filterForm" method="GET" style="display: none;"></form>
 @endsection
 
 @section('scripts')
