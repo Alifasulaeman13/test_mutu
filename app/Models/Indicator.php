@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Indicator extends Model
 {
@@ -39,9 +40,9 @@ class Indicator extends Model
         return $this->hasMany(IndicatorFormula::class);
     }
 
-    // Get active formula
-    public function activeFormula()
+    // Get active formula relationship
+    public function activeFormula(): HasOne
     {
-        return $this->formulas()->where('is_active', true)->first();
+        return $this->hasOne(IndicatorFormula::class)->where('is_active', true);
     }
 } 

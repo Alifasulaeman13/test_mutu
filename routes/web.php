@@ -10,6 +10,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\IndicatorController;
 use App\Http\Controllers\IndicatorFormulaController;
 use App\Http\Controllers\DailyIndicatorDataController;
+use App\Http\Controllers\Auth\LoginController;
 
 // Fungsi middleware untuk cek autentikasi
 function checkAuth($request, $next) {
@@ -153,6 +154,11 @@ Route::post('/logout', function (\Illuminate\Http\Request $request) {
 
     Route::put('/api/users/{id}', function (\Illuminate\Http\Request $request, $id) {
         try {
+            Log::info('Updating user', [
+                'user_id' => $id,
+                'request_data' => $request->all()
+            ]);
+            
             $user = User::findOrFail($id);
             
             // Validate request
@@ -161,12 +167,16 @@ Route::post('/logout', function (\Illuminate\Http\Request $request) {
                 'username' => 'required|string|max:255|unique:users,username,' . $id,
                 'email' => 'required|email|max:255|unique:users,email,' . $id,
                 'role_id' => 'required|exists:roles,id',
-                'unit' => 'nullable|string|max:255',
+                'unit_id' => 'nullable|exists:units,id',
                 'is_active' => 'required|boolean',
                 'password' => 'nullable|string|min:6',
             ];
 
             $validated = $request->validate($rules);
+            
+            Log::info('Validation passed', [
+                'validated_data' => $validated
+            ]);
 
             // Only update password if provided
             if (empty($validated['password'])) {
@@ -176,6 +186,11 @@ Route::post('/logout', function (\Illuminate\Http\Request $request) {
             }
 
             $user->update($validated);
+            
+            Log::info('User updated successfully', [
+                'user_id' => $id,
+                'updated_data' => $validated
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -184,7 +199,10 @@ Route::post('/logout', function (\Illuminate\Http\Request $request) {
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('Validation error updating user: ' . json_encode($e->errors()));
+            Log::error('Validation error updating user', [
+                'user_id' => $id,
+                'errors' => $e->errors()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Error validasi',
@@ -192,7 +210,11 @@ Route::post('/logout', function (\Illuminate\Http\Request $request) {
             ], 422);
 
         } catch (\Exception $e) {
-            Log::error('Error updating user: ' . $e->getMessage());
+            Log::error('Error updating user', [
+                'user_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat mengupdate user'
@@ -311,6 +333,32 @@ Route::post('/logout', function (\Illuminate\Http\Request $request) {
         Route::put('/formula/{formula}', [IndicatorFormulaController::class, 'update'])->name('formula.update');
         Route::delete('/formula/{formula}', [IndicatorFormulaController::class, 'destroy'])->name('formula.destroy');
     });
+
+    // Laporan & Analisis Routes
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/laporan-analisis', [DailyIndicatorDataController::class, 'index'])->name('laporan-analisis.index');
+        Route::get('/laporan-analisis/create', [DailyIndicatorDataController::class, 'create'])->name('laporan-analisis.create');
+        Route::post('/laporan-analisis', [DailyIndicatorDataController::class, 'store'])->name('laporan-analisis.store');
+        Route::get('/laporan-analisis/{dailyData}/edit', [DailyIndicatorDataController::class, 'edit'])->name('laporan-analisis.edit');
+        Route::put('/laporan-analisis/{dailyData}', [DailyIndicatorDataController::class, 'update'])->name('laporan-analisis.update');
+        Route::delete('/laporan-analisis/{dailyData}', [DailyIndicatorDataController::class, 'destroy'])->name('laporan-analisis.destroy');
+    });
+});
+
+// Routes untuk guest (belum login)
+Route::middleware('guest')->group(function () {
+    Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('login', [LoginController::class, 'login']);
+});
+
+// Routes untuk user yang sudah login
+Route::middleware('auth')->group(function () {
+    Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+    
+    // Dashboard
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
 
     // Laporan & Analisis Routes
     Route::prefix('laporan-analisis')->name('laporan-analisis.')->group(function () {
