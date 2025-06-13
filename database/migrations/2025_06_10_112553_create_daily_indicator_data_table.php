@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('daily_indicator_data', function (Blueprint $table) {
+        Schema::create('monthly_indicator_data', function (Blueprint $table) {
             $table->id();
             $table->foreignId('indicator_id')->constrained('indicators')->comment('Indikator yang diukur');
             $table->date('date')->comment('Tanggal pengukuran');
@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('daily_indicator_data');
+        Schema::dropIfExists('monthly_indicator_data');
     }
 };

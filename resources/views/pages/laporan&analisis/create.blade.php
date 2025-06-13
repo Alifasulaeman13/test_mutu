@@ -59,6 +59,19 @@
     box-shadow: 0 0 0 1px var(--primary-color);
 }
 
+.form-select optgroup {
+    font-weight: 600;
+    color: #1e293b;
+    background-color: #f8fafc;
+}
+
+.form-select option {
+    font-weight: normal;
+    color: #475569;
+    background-color: white;
+    padding: 0.5rem;
+}
+
 .is-invalid {
     border-color: #dc2626;
 }
@@ -130,24 +143,58 @@
             
             <div class="form-group">
                 <label for="indicator_id" class="form-label">Indikator</label>
-                <select name="indicator_id" id="indicator_id" class="form-select @error('indicator_id') is-invalid @enderror" required>
-                    <option value="">Pilih Indikator</option>
-                    @foreach($indicators as $indicator)
-                        <option value="{{ $indicator->id }}" {{ old('indicator_id') == $indicator->id ? 'selected' : '' }}>
-                            {{ $indicator->name }} ({{ $indicator->unit->name }})
-                        </option>
-                    @endforeach
-                </select>
+                @if($isAdmin && $groupedIndicators)
+                    <select name="indicator_id" id="indicator_id" class="form-select @error('indicator_id') is-invalid @enderror" required>
+                        <option value="">Pilih Indikator</option>
+                        @foreach($groupedIndicators as $unitName => $unitIndicators)
+                            <optgroup label="{{ $unitName }}">
+                                @foreach($unitIndicators as $indicator)
+                                    <option value="{{ $indicator->id }}" {{ (old('indicator_id', $selectedIndicatorId) == $indicator->id) ? 'selected' : '' }}>
+                                        {{ $indicator->name }}
+                                    </option>
+                                @endforeach
+                            </optgroup>
+                        @endforeach
+                    </select>
+                @else
+                    <select name="indicator_id" id="indicator_id" class="form-select @error('indicator_id') is-invalid @enderror" required>
+                        <option value="">Pilih Indikator</option>
+                        @foreach($indicators as $indicator)
+                            <option value="{{ $indicator->id }}" {{ (old('indicator_id', $selectedIndicatorId) == $indicator->id) ? 'selected' : '' }}>
+                                {{ $indicator->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                @endif
                 @error('indicator_id')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
 
             <div class="form-group">
-                <label for="date" class="form-label">Tanggal</label>
-                <input type="date" name="date" id="date" class="form-input @error('date') is-invalid @enderror"
-                    value="{{ old('date', date('Y-m-d')) }}" required>
-                @error('date')
+                <label for="month" class="form-label">Bulan</label>
+                <select name="month" id="month" class="form-select @error('month') is-invalid @enderror" required readonly>
+                    @foreach(range(1, 12) as $month)
+                        <option value="{{ $month }}" {{ date('n') == $month ? 'selected' : '' }}>
+                            {{ date('F', mktime(0, 0, 0, $month, 1)) }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('month')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label for="year" class="form-label">Tahun</label>
+                <select name="year" id="year" class="form-select @error('year') is-invalid @enderror" required readonly>
+                    @foreach(range(date('Y')-5, date('Y')+5) as $year)
+                        <option value="{{ $year }}" {{ date('Y') == $year ? 'selected' : '' }}>
+                            {{ $year }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('year')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
@@ -183,4 +230,29 @@
         </form>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Disable bulan dan tahun secara visual tapi tetap mengirim value
+    const monthSelect = document.getElementById('month');
+    const yearSelect = document.getElementById('year');
+    
+    monthSelect.style.backgroundColor = '#f1f5f9';
+    yearSelect.style.backgroundColor = '#f1f5f9';
+    
+    monthSelect.style.cursor = 'not-allowed';
+    yearSelect.style.cursor = 'not-allowed';
+    
+    // Prevent manual changes
+    monthSelect.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+    });
+    
+    yearSelect.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+    });
+});
+</script>
 @endsection 

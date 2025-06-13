@@ -236,6 +236,7 @@
                 ['label' => 'UNIT', 'field' => 'unit'],
                 ['label' => 'TARGET', 'field' => 'target'],
                 ['label' => 'TIPE', 'field' => 'tipe'],
+                ['label' => 'PERIODE', 'field' => 'periode'],
                 ['label' => 'STATUS', 'field' => 'status'],
                 ['label' => 'AKSI', 'field' => 'aksi'],
             ]"
