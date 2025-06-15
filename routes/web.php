@@ -12,6 +12,7 @@ use App\Http\Controllers\IndicatorFormulaController;
 use App\Http\Controllers\DailyIndicatorDataController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MonthlyIndicatorDataController;
+use App\Http\Controllers\ManageAksesController;
 
 // Fungsi middleware untuk cek autentikasi
 function checkAuth($request, $next) {
@@ -370,4 +371,8 @@ Route::middleware('auth')->group(function () {
         Route::put('/{monthlyData}', [MonthlyIndicatorDataController::class, 'update'])->name('update');
         Route::delete('/{monthlyData}', [MonthlyIndicatorDataController::class, 'destroy'])->name('destroy');
     });
+
+    // Routes untuk manajemen hak akses
+    Route::get('/manage-akses', [ManageAksesController::class, 'index'])->name('manage-akses.index');
+    Route::post('/manage-akses', [ManageAksesController::class, 'store'])->name('manage-akses.store');
 });

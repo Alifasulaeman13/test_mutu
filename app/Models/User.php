@@ -71,4 +71,15 @@ class User extends Authenticatable
     {
         return $this->hasRole('admin');
     }
+
+    public function hasMenuAccess($menuKey)
+    {
+        // Admin always has access to all menus
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        // Check menu access from database
+        return $this->role->menuAccess()->where('menu_key', $menuKey)->exists();
+    }
 }
