@@ -7,9 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Indicator extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'unit_id',
         'name',
@@ -86,5 +89,11 @@ class Indicator extends Model
             'month' => $currentMonth,
             'year' => $currentYear
         ];
+    }
+
+    // Relasi dengan model KamusIndikatorMutu
+    public function kamusIndikator()
+    {
+        return $this->hasOne(KamusIndikatorMutu::class, 'indikator_id');
     }
 } 
