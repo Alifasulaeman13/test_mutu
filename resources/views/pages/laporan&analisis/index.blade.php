@@ -428,7 +428,7 @@
                             <td class="column-cell">
                                 @if($data['has_data'])
                                     @php
-                                        $achievement = $data['total'];
+                                        $achievement = min($data['total'], 100);
                                         $badgeClass = $achievement >= 80 ? 'success' : ($achievement >= 60 ? 'warning' : 'danger');
                                     @endphp
                                     <span class="badge badge-{{ $badgeClass }}">

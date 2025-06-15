@@ -385,6 +385,12 @@
             opacity: 0.8;
         }
 
+        /* Style for active submenu links */
+        .submenu-link.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
         .submenu-arrow {
             margin-left: auto;
             font-size: 1.125rem;
@@ -444,7 +450,7 @@
                     <div class="menu-section-title">Menu Utama</div>
                     <ul class="menu-list">
                         <li class="menu-item">
-                            <a href="/dashboard" class="menu-link {{ request()->is('dashboard') ? 'active' : '' }}">
+                            <a href="/dashboard" class="menu-link {{-- request()->is('dashboard') ? 'active' : '' --}}" data-menu-key="dashboard">
                                 <i class="ri-dashboard-line menu-icon"></i>
                                 Dashboard
                             </a>
@@ -456,27 +462,27 @@
                     <div class="menu-section-title">Menu</div>
                     <ul class="menu-list">
                         <li class="menu-item">
-                            <a href="#" class="menu-link has-submenu" onclick="toggleSubmenu(event, 'manajemenMutuSubmenu')">
+                            <a href="#" class="menu-link has-submenu" onclick="toggleSubmenu(event, 'manajemenMutuSubmenu')" data-menu-key="master_indikator">
                                 <i class="ri-database-2-line menu-icon"></i>
                                 Manajemen Data Mutu
                                 <i class="ri-arrow-right-s-line menu-arrow"></i>
                             </a>
                             <ul class="submenu" id="manajemenMutuSubmenu">
                                 <li class="submenu-item">
-                                    <a href="#" class="submenu-link has-submenu" onclick="toggleSubmenu(event, 'masterIndikatorSubmenu')">
+                                    <a href="#" class="submenu-link has-submenu" onclick="toggleSubmenu(event, 'masterIndikatorSubmenu')" data-menu-key="master_indikator">
                                         <i class="ri-star-line submenu-icon"></i>
                                         Master Indikator Mutu
                                         <i class="ri-arrow-right-s-line submenu-arrow"></i>
                                     </a>
                                     <ul class="submenu nested" id="masterIndikatorSubmenu">
                                         <li>
-                                            <a href="{{ route('master-indikator.index') }}" class="submenu-link {{ request()->routeIs('master-indikator.index') ? 'active' : '' }}">
+                                            <a href="{{ route('master-indikator.index') }}" class="submenu-link {{-- request()->routeIs('master-indikator.index') ? 'active' : '' --}}" data-menu-key="master_indikator">
                                                 <i class="ri-list-check-2 submenu-icon"></i>
                                                 Master Indikator
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="{{ route('master-indikator.formula.index') }}" class="submenu-link {{ request()->routeIs('master-indikator.formula.*') ? 'active' : '' }}">
+                                            <a href="{{ route('master-indikator.formula.index') }}" class="submenu-link {{-- request()->routeIs('master-indikator.formula.*') ? 'active' : '' --}}" data-menu-key="formula">
                                                 <i class="ri-functions submenu-icon"></i>
                                                 Formula
                                             </a>
@@ -484,12 +490,11 @@
                                     </ul>
                                 </li>
                                 <li class="submenu-item">
-                                    <a href="{{ route('laporan-analisis.index') }}" class="submenu-link {{ request()->routeIs('laporan-analisis.*') ? 'active' : '' }}">
+                                    <a href="{{ route('laporan-analisis.index') }}" class="submenu-link {{-- request()->routeIs('laporan-analisis.*') ? 'active' : '' --}}" data-menu-key="laporan_analisis">
                                         <i class="ri-file-chart-line submenu-icon"></i>
                                         Laporan dan Analisis
                                     </a>
                                 </li>
-                                
                             </ul>
                         </li>
                     </ul>
@@ -499,33 +504,39 @@
                     <div class="menu-section-title">Pengaturan</div>
                     <ul class="menu-list">
                         <li class="menu-item">
-                            <a href="#" class="menu-link">
+                            <a href="#" class="menu-link" data-menu-key="database">
                                 <i class="ri-database-2-line menu-icon"></i>
                                 Database
                             </a>
                         </li>
                         <li class="menu-item">
-                            <a href="#" class="menu-link">
+                            <a href="#" class="menu-link" data-menu-key="unit">
                                 <i class="ri-building-2-line menu-icon"></i>
                                 Unit
                             </a>
                         </li>
                         <li class="menu-item">
-                            <a href="{{ route('master-users.index') }}" class="menu-link {{ request()->routeIs('master-users.*') ? 'active' : '' }}">
+                            <a href="{{ route('master-users.index') }}" class="menu-link {{-- request()->routeIs('master-users.*') ? 'active' : '' --}}" data-menu-key="manajemen_user">
                                 <i class="ri-user-settings-line menu-icon"></i>
                                 Manajemen User
                             </a>
                         </li>
                         <li class="menu-item">
-                            <a href="{{ route('manage-role.index') }}" class="menu-link {{ request()->routeIs('manage-role.*') ? 'active' : '' }}">
+                            <a href="{{ route('manage-role.index') }}" class="menu-link {{-- request()->routeIs('manage-role.*') ? 'active' : '' --}}" data-menu-key="manage_role">
                                 <i class="ri-shield-user-line menu-icon"></i>
                                 Manage Role
                             </a>
                         </li>
                         <li class="menu-item">
-                            <a href="{{ route('master.units.index') }}" class="menu-link {{ request()->routeIs('master.units.*') ? 'active' : '' }}">
+                            <a href="{{ route('master.units.index') }}" class="menu-link {{-- request()->routeIs('master.units.*') ? 'active' : '' --}}" data-menu-key="manajemen_unit">
                                 <i class="ri-building-2-line menu-icon"></i>
                                 Manajemen Unit
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ route('manage-akses.index') }}" class="menu-link {{-- request()->routeIs('manage-akses.*') ? 'active' : '' --}}" data-menu-key="hak_akses">
+                                <i class="ri-shield-check-line menu-icon"></i>
+                                Hak Akses
                             </a>
                         </li>
                     </ul>
@@ -549,6 +560,51 @@
                 </form>
             </div>
 
+            <!-- Breadcrumb Navigation -->
+            <div class="breadcrumb-container" style="background: white; padding: 0.75rem 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);">
+                <div class="breadcrumb" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #64748b;">
+                    <a href="{{ route('dashboard') }}" style="color: var(--primary-color); text-decoration: none;">
+                        <i class="ri-home-line"></i> Dashboard
+                    </a>
+                    
+                    @php
+                        $currentRoute = Route::currentRouteName();
+                        $currentPath = request()->path();
+                    @endphp
+
+                    @if(str_contains($currentPath, 'master-indikator'))
+                        <i class="ri-arrow-right-s-line"></i>
+                        <span>Manajemen Data Mutu</span>
+                        <i class="ri-arrow-right-s-line"></i>
+                        <span>Master Indikator Mutu</span>
+                        @if(str_contains($currentPath, 'formula'))
+                            <i class="ri-arrow-right-s-line"></i>
+                            <span>Formula</span>
+                        @endif
+                    @elseif(str_contains($currentPath, 'laporan-analisis'))
+                        <i class="ri-arrow-right-s-line"></i>
+                        <span>Manajemen Data Mutu</span>
+                        <i class="ri-arrow-right-s-line"></i>
+                        <span>Laporan dan Analisis</span>
+                    @elseif(str_contains($currentPath, 'master-users'))
+                        <i class="ri-arrow-right-s-line"></i>
+                        <span>Pengaturan</span>
+                        <i class="ri-arrow-right-s-line"></i>
+                        <span>Manajemen User</span>
+                    @elseif(str_contains($currentPath, 'manage-role'))
+                        <i class="ri-arrow-right-s-line"></i>
+                        <span>Pengaturan</span>
+                        <i class="ri-arrow-right-s-line"></i>
+                        <span>Manage Role</span>
+                    @elseif(str_contains($currentPath, 'master/units'))
+                        <i class="ri-arrow-right-s-line"></i>
+                        <span>Pengaturan</span>
+                        <i class="ri-arrow-right-s-line"></i>
+                        <span>Manajemen Unit</span>
+                    @endif
+                </div>
+            </div>
+
             @yield('content')
         </main>
     </div>
@@ -563,6 +619,39 @@
             // Get active menu from localStorage or URL
             const currentPath = window.location.pathname;
             const savedMenuState = JSON.parse(localStorage.getItem('menuState') || '{}');
+            
+            // Function to check menu access
+            function hasMenuAccess(menuKey) {
+                const userRole = '{{ Auth::user()->role->slug }}';
+                const userMenuAccess = @json(Auth::user()->role->menuAccess->pluck('menu_key'));
+                
+                // Admin has access to all menus
+                if (userRole === 'admin') {
+                    return true;
+                }
+                
+                // Check if menu key exists in user's menu access
+                return userMenuAccess.includes(menuKey);
+            }
+
+            // Hide menu items based on access
+            document.querySelectorAll('.menu-link, .submenu-link').forEach(link => {
+                const menuKey = link.getAttribute('data-menu-key');
+                if (menuKey && !hasMenuAccess(menuKey)) {
+                    const menuItem = link.closest('.menu-item, .submenu-item');
+                    if (menuItem) {
+                        menuItem.style.display = 'none';
+                    }
+                }
+            });
+
+            // Hide empty menu sections
+            document.querySelectorAll('.menu-section').forEach(section => {
+                const visibleItems = section.querySelectorAll('.menu-item:not([style*="display: none"])');
+                if (visibleItems.length === 0) {
+                    section.style.display = 'none';
+                }
+            });
             
             // Function to open parent menus
             function openParentMenus(element) {
@@ -580,9 +669,15 @@
             // Set initial active state
             document.querySelectorAll('.menu-link, .submenu-link').forEach(link => {
                 const href = link.getAttribute('href');
-                if (href && href !== '#' && currentPath === href) {
-                    link.classList.add('active');
-                    openParentMenus(link);
+                if (href && href !== '#') {
+                    // Normalize href to be a path relative to the domain
+                    const normalizedHref = new URL(href, window.location.origin).pathname;
+
+                    // Check if currentPath is an exact match for the normalized href
+                    if (currentPath === normalizedHref) {
+                        link.classList.add('active');
+                        openParentMenus(link);
+                    }
                 }
             });
 
