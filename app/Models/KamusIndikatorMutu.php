@@ -35,12 +35,43 @@ class KamusIndikatorMutu extends Model
         return $this->belongsTo(Indicator::class, 'indikator_id');
     }
 
-    public function dimensiMutu() { return $this->belongsTo(DimensiMutu::class, 'dimensi_mutu_id'); }
-    public function metodologiPengumpulan() { return $this->belongsTo(MetodologiPengumpulanData::class, 'metodologi_pengumpulan_data_id'); }
-    public function cakupanData() { return $this->belongsTo(CakupanData::class, 'cakupan_data_id'); }
-    public function frekuensiPengumpulan() { return $this->belongsTo(FrekuensiPengumpulanData::class, 'frekuensi_pengumpulan_data_id'); }
-    public function frekuensiAnalisa() { return $this->belongsTo(FrekuensiAnalisaData::class, 'frekuensi_analisa_data_id'); }
-    public function metodologiAnalisa() { return $this->belongsTo(MetodologiAnalisaData::class, 'metodologi_analisa_data_id'); }
-    public function interpretasiData() { return $this->belongsTo(InterpretasiData::class, 'interpretasi_data_id'); }
-    public function publikasiData() { return $this->belongsTo(PublikasiData::class, 'publikasi_data_id'); }
+    public function dimensiMutu()
+    {
+        return $this->belongsTo(DimensiMutu::class, 'dimensi_mutu_id');
+    }
+
+    public function metodologiPengumpulan()
+    {
+        return $this->belongsTo(MetodologiPengumpulanData::class, 'metodologi_pengumpulan_data_id');
+    }
+
+    public function cakupanData()
+    {
+        return $this->belongsTo(CakupanData::class, 'cakupan_data_id');
+    }
+
+    public function frekuensiPengumpulan()
+    {
+        return $this->belongsTo(FrekuensiPengumpulanData::class, 'frekuensi_pengumpulan_data_id');
+    }
+
+    public function frekuensiAnalisa()
+    {
+        return $this->belongsTo(FrekuensiAnalisaData::class, 'frekuensi_analisa_data_id');
+    }
+
+    public function metodologiAnalisa()
+    {
+        return $this->belongsTo(MetodologiAnalisaData::class, 'metodologi_analisa_data_id');
+    }
+
+    public function interpretasiData()
+    {
+        return $this->belongsTo(InterpretasiData::class, 'interpretasi_data_id');
+    }
+
+    public function publikasiData()
+    {
+        return $this->belongsTo(PublikasiData::class, 'publikasi_data_id');
+    }
 }

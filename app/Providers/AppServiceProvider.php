@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Blade;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -64,5 +65,7 @@ class AppServiceProvider extends ServiceProvider
             ],
         ];
         View::share('menuList', $menuList);
+
+        Blade::component('form-input', \App\View\Components\FormInput::class);
     }
 }

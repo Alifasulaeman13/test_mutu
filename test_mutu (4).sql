@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 16, 2025 at 03:13 AM
+-- Generation Time: Jun 16, 2025 at 11:32 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.2.27
 
@@ -58,6 +58,13 @@ CREATE TABLE `cakupan_data` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `cakupan_data`
+--
+
+INSERT INTO `cakupan_data` (`id`, `nama`, `created_at`, `updated_at`) VALUES
+(1, 'cakupan data', '2025-06-16 16:18:29', '2025-06-16 16:18:29');
+
 -- --------------------------------------------------------
 
 --
@@ -70,6 +77,13 @@ CREATE TABLE `dimensi_mutu` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `dimensi_mutu`
+--
+
+INSERT INTO `dimensi_mutu` (`id`, `nama`, `created_at`, `updated_at`) VALUES
+(1, 'dimensi', '2025-06-16 16:28:19', '2025-06-16 16:28:19');
 
 -- --------------------------------------------------------
 
@@ -100,6 +114,13 @@ CREATE TABLE `frekuensi_analisa_data` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `frekuensi_analisa_data`
+--
+
+INSERT INTO `frekuensi_analisa_data` (`id`, `nama`, `created_at`, `updated_at`) VALUES
+(1, 'analisan data', '2025-06-16 16:26:18', '2025-06-16 16:26:18');
+
 -- --------------------------------------------------------
 
 --
@@ -112,6 +133,13 @@ CREATE TABLE `frekuensi_pengumpulan_data` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `frekuensi_pengumpulan_data`
+--
+
+INSERT INTO `frekuensi_pengumpulan_data` (`id`, `nama`, `created_at`, `updated_at`) VALUES
+(1, 'frekuensi pengumpulan data', '2025-06-16 16:19:12', '2025-06-16 16:19:12');
 
 -- --------------------------------------------------------
 
@@ -138,7 +166,8 @@ CREATE TABLE `indicators` (
 --
 
 INSERT INTO `indicators` (`id`, `unit_id`, `name`, `target_percentage`, `type`, `is_active`, `created_at`, `updated_at`, `reporting_start_day`, `reporting_end_day`, `is_period_active`) VALUES
-(1, 1, 'alif', '80.00', 'lokal', 1, '2025-06-15 20:04:37', '2025-06-15 20:04:37', 2, 29, 1);
+(1, 1, 'alif', '80.00', 'lokal', 1, '2025-06-15 20:04:37', '2025-06-15 21:43:45', 1, 30, 1),
+(2, 1, '111', '30.00', 'lokal', 1, '2025-06-15 22:13:41', '2025-06-15 22:13:41', 1, 30, 1);
 
 -- --------------------------------------------------------
 
@@ -173,6 +202,13 @@ CREATE TABLE `interpretasi_data` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `interpretasi_data`
+--
+
+INSERT INTO `interpretasi_data` (`id`, `nama`, `created_at`, `updated_at`) VALUES
+(1, 'inter pretasi', '2025-06-16 16:27:22', '2025-06-16 16:27:22');
 
 -- --------------------------------------------------------
 
@@ -307,6 +343,13 @@ CREATE TABLE `metodologi_analisa_data` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `metodologi_analisa_data`
+--
+
+INSERT INTO `metodologi_analisa_data` (`id`, `nama`, `created_at`, `updated_at`) VALUES
+(1, 'metodologi analisa data', '2025-06-16 16:26:59', '2025-06-16 16:26:59');
+
 -- --------------------------------------------------------
 
 --
@@ -319,6 +362,13 @@ CREATE TABLE `metodologi_pengumpulan_data` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `metodologi_pengumpulan_data`
+--
+
+INSERT INTO `metodologi_pengumpulan_data` (`id`, `nama`, `created_at`, `updated_at`) VALUES
+(1, 'naruto', '2025-06-16 16:17:27', '2025-06-16 16:17:27');
 
 -- --------------------------------------------------------
 
@@ -376,7 +426,10 @@ CREATE TABLE `monthly_indicator_data` (
 --
 
 INSERT INTO `monthly_indicator_data` (`id`, `indicator_id`, `date`, `numerator`, `denominator`, `achievement_percentage`, `created_at`, `updated_at`) VALUES
-(1, 1, '2025-06-01', 22, 22, '100.00', '2025-06-15 20:04:55', '2025-06-15 20:04:55');
+(1, 1, '2025-06-01', 22, 22, '100.00', '2025-06-15 20:04:55', '2025-06-15 20:04:55'),
+(2, 1, '2025-05-01', 22, 22, '100.00', '2025-06-15 21:48:23', '2025-06-15 21:48:23'),
+(3, 1, '2025-04-01', 5, 1, '500.00', '2025-06-15 21:49:18', '2025-06-15 21:49:18'),
+(4, 2, '2025-06-01', 5, 8, '62.50', '2025-06-15 22:14:09', '2025-06-15 22:14:09');
 
 -- --------------------------------------------------------
 
@@ -409,6 +462,13 @@ CREATE TABLE `publikasi_data` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `publikasi_data`
+--
+
+INSERT INTO `publikasi_data` (`id`, `nama`, `created_at`, `updated_at`) VALUES
+(1, 'lii', '2025-06-16 16:29:31', '2025-06-16 16:29:31');
 
 -- --------------------------------------------------------
 
@@ -456,7 +516,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('KmgHA1HdKjeZoVCBYTZdhASlVY7HBo5bpHC0sbRo', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoibmd4ZHJOdlhvc0dnMVNMQWNkNWc1NWpJdlptM2tlejF6RkhCYkozZSI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9kYXNoYm9hcmQiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1750043589);
+('I2BiAaTOIIlcZMyTs8MzCWRfpJ4vD7lkSkyZ1xAJ', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiVVhieWhHWnRmODlTUjBJWkxUMHEzM1l1eFdpekpMSVdsNUN4MlNRbyI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9rYW11cy1pbmRpa2F0b3IiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1750115178),
+('LmWI6dJ0DjVStXtNuLohdpNo6RWqcZxcEOX2OOAN', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiMUQzaTBGMVdTdDc2QWdlWVg1UzFVYnIwVk05M2RtNHZzbFpPaVlGTiI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6NDQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9rYW11cy1pbmRpa2F0b3IvY3JlYXRlIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTt9', 1750116577);
 
 -- --------------------------------------------------------
 
@@ -692,13 +753,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `cakupan_data`
 --
 ALTER TABLE `cakupan_data`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `dimensi_mutu`
 --
 ALTER TABLE `dimensi_mutu`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -710,19 +771,19 @@ ALTER TABLE `failed_jobs`
 -- AUTO_INCREMENT for table `frekuensi_analisa_data`
 --
 ALTER TABLE `frekuensi_analisa_data`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `frekuensi_pengumpulan_data`
 --
 ALTER TABLE `frekuensi_pengumpulan_data`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `indicators`
 --
 ALTER TABLE `indicators`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `indicator_formulas`
@@ -734,7 +795,7 @@ ALTER TABLE `indicator_formulas`
 -- AUTO_INCREMENT for table `interpretasi_data`
 --
 ALTER TABLE `interpretasi_data`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `jobs`
@@ -758,13 +819,13 @@ ALTER TABLE `menu_access`
 -- AUTO_INCREMENT for table `metodologi_analisa_data`
 --
 ALTER TABLE `metodologi_analisa_data`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `metodologi_pengumpulan_data`
 --
 ALTER TABLE `metodologi_pengumpulan_data`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `migrations`
@@ -776,7 +837,7 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `monthly_indicator_data`
 --
 ALTER TABLE `monthly_indicator_data`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `personal_access_tokens`
@@ -788,7 +849,7 @@ ALTER TABLE `personal_access_tokens`
 -- AUTO_INCREMENT for table `publikasi_data`
 --
 ALTER TABLE `publikasi_data`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `roles`

@@ -12,9 +12,11 @@ use App\Models\FrekuensiAnalisaData;
 use App\Models\MetodologiAnalisaData;
 use App\Models\InterpretasiData;
 use App\Models\PublikasiData;
+use App\Exports\KamusIndikatorMutuExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 class KamusIndikatorMutuController extends Controller
 {
@@ -82,6 +84,19 @@ class KamusIndikatorMutuController extends Controller
         $metodologiAnalisa = MetodologiAnalisaData::all();
         $interpretasiData = InterpretasiData::all();
         $publikasiData = PublikasiData::all();
+
+        // Log untuk debugging
+        Log::info('Data for Kamus Indikator Form', [
+            'indicators' => $indicators->count(),
+            'dimensiMutu' => $dimensiMutu->count(),
+            'metodologiPengumpulan' => $metodologiPengumpulan->count(),
+            'cakupanData' => $cakupanData->count(),
+            'frekuensiPengumpulan' => $frekuensiPengumpulan->count(),
+            'frekuensiAnalisa' => $frekuensiAnalisa->count(),
+            'metodologiAnalisa' => $metodologiAnalisa->count(),
+            'interpretasiData' => $interpretasiData->count(),
+            'publikasiData' => $publikasiData->count(),
+        ]);
 
         return view('pages.kamus_indikator.add', compact(
             'indicators',
@@ -245,6 +260,22 @@ class KamusIndikatorMutuController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export data to Excel
+     */
+    public function export()
+    {
+        try {
+            $date = now()->format('d-m-Y_H-i-s');
+            $filename = "kamus_indikator_mutu_{$date}.xlsx";
+            
+            return Excel::download(new KamusIndikatorMutuExport, $filename);
+        } catch (\Exception $e) {
+            Log::error('Error exporting Kamus Indikator Mutu: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat mengexport data: ' . $e->getMessage());
         }
     }
 }

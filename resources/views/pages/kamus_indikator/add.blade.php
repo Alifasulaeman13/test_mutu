@@ -197,13 +197,11 @@
                 <label for="dimensi_mutu_id" class="form-label">Dimensi Mutu</label>
                 <select name="dimensi_mutu_id" id="dimensi_mutu_id" class="form-select @error('dimensi_mutu_id') is-invalid @enderror" required>
                     <option value="">Pilih Dimensi Mutu</option>
-                    <optgroup label="Dimensi Mutu">
-                        @foreach($dimensiMutu as $dimensi)
-                            <option value="{{ $dimensi->id }}" {{ old('dimensi_mutu_id') == $dimensi->id ? 'selected' : '' }}>
-                                {{ $dimensi->name }}
-                            </option>
-                        @endforeach
-                    </optgroup>
+                    @foreach($dimensiMutu as $dimensi)
+                        <option value="{{ $dimensi->id }}" {{ old('dimensi_mutu_id') == $dimensi->id ? 'selected' : '' }}>
+                            {{ $dimensi->nama }}
+                        </option>
+                    @endforeach
                 </select>
                 @error('dimensi_mutu_id')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -241,13 +239,11 @@
                 <label for="metodologi_pengumpulan_data_id" class="form-label">Jenis Metodologi Pengumpulan Data</label>
                 <select name="metodologi_pengumpulan_data_id" id="metodologi_pengumpulan_data_id" class="form-select @error('metodologi_pengumpulan_data_id') is-invalid @enderror" required>
                     <option value="">Pilih Metodologi Pengumpulan Data</option>
-                    <optgroup label="Metodologi Pengumpulan Data">
-                        @foreach($metodologiPengumpulan as $metodologi)
-                            <option value="{{ $metodologi->id }}" {{ old('metodologi_pengumpulan_data_id') == $metodologi->id ? 'selected' : '' }}>
-                                {{ $metodologi->name }}
-                            </option>
-                        @endforeach
-                    </optgroup>
+                    @foreach($metodologiPengumpulan as $metodologi)
+                        <option value="{{ $metodologi->id }}" {{ old('metodologi_pengumpulan_data_id') == $metodologi->id ? 'selected' : '' }}>
+                            {{ $metodologi->nama }}
+                        </option>
+                    @endforeach
                 </select>
                 @error('metodologi_pengumpulan_data_id')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -258,13 +254,11 @@
                 <label for="cakupan_data_id" class="form-label">Cakupan Data</label>
                 <select name="cakupan_data_id" id="cakupan_data_id" class="form-select @error('cakupan_data_id') is-invalid @enderror" required>
                     <option value="">Pilih Cakupan Data</option>
-                    <optgroup label="Cakupan Data">
-                        @foreach($cakupanData as $cakupan)
-                            <option value="{{ $cakupan->id }}" {{ old('cakupan_data_id') == $cakupan->id ? 'selected' : '' }}>
-                                {{ $cakupan->name }}
-                            </option>
-                        @endforeach
-                    </optgroup>
+                    @foreach($cakupanData as $cakupan)
+                        <option value="{{ $cakupan->id }}" {{ old('cakupan_data_id') == $cakupan->id ? 'selected' : '' }}>
+                            {{ $cakupan->nama }}
+                        </option>
+                    @endforeach
                 </select>
                 @error('cakupan_data_id')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -284,13 +278,11 @@
                 <label for="frekuensi_pengumpulan_data_id" class="form-label">Frekuensi Pengumpulan Data</label>
                 <select name="frekuensi_pengumpulan_data_id" id="frekuensi_pengumpulan_data_id" class="form-select @error('frekuensi_pengumpulan_data_id') is-invalid @enderror" required>
                     <option value="">Pilih Frekuensi Pengumpulan Data</option>
-                    <optgroup label="Frekuensi Pengumpulan Data">
-                        @foreach($frekuensiPengumpulan as $frekuensi)
-                            <option value="{{ $frekuensi->id }}" {{ old('frekuensi_pengumpulan_data_id') == $frekuensi->id ? 'selected' : '' }}>
-                                {{ $frekuensi->name }}
-                            </option>
-                        @endforeach
-                    </optgroup>
+                    @foreach($frekuensiPengumpulan as $frekuensi)
+                        <option value="{{ $frekuensi->id }}" {{ old('frekuensi_pengumpulan_data_id') == $frekuensi->id ? 'selected' : '' }}>
+                            {{ $frekuensi->nama }}
+                        </option>
+                    @endforeach
                 </select>
                 @error('frekuensi_pengumpulan_data_id')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -301,13 +293,11 @@
                 <label for="frekuensi_analisa_data_id" class="form-label">Frekuensi Analisa Data</label>
                 <select name="frekuensi_analisa_data_id" id="frekuensi_analisa_data_id" class="form-select @error('frekuensi_analisa_data_id') is-invalid @enderror" required>
                     <option value="">Pilih Frekuensi Analisa Data</option>
-                    <optgroup label="Frekuensi Analisa Data">
-                        @foreach($frekuensiAnalisa as $frekuensi)
-                            <option value="{{ $frekuensi->id }}" {{ old('frekuensi_analisa_data_id') == $frekuensi->id ? 'selected' : '' }}>
-                                {{ $frekuensi->name }}
-                            </option>
-                        @endforeach
-                    </optgroup>
+                    @foreach($frekuensiAnalisa as $frekuensi)
+                        <option value="{{ $frekuensi->id }}" {{ old('frekuensi_analisa_data_id') == $frekuensi->id ? 'selected' : '' }}>
+                            {{ $frekuensi->nama }}
+                        </option>
+                    @endforeach
                 </select>
                 @error('frekuensi_analisa_data_id')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -318,13 +308,11 @@
                 <label for="metodologi_analisa_data_id" class="form-label">Metodologi Analisa Data</label>
                 <select name="metodologi_analisa_data_id" id="metodologi_analisa_data_id" class="form-select @error('metodologi_analisa_data_id') is-invalid @enderror" required>
                     <option value="">Pilih Metodologi Analisa Data</option>
-                    <optgroup label="Metodologi Analisa Data">
-                        @foreach($metodologiAnalisa as $metodologi)
-                            <option value="{{ $metodologi->id }}" {{ old('metodologi_analisa_data_id') == $metodologi->id ? 'selected' : '' }}>
-                                {{ $metodologi->name }}
-                            </option>
-                        @endforeach
-                    </optgroup>
+                    @foreach($metodologiAnalisa as $metodologi)
+                        <option value="{{ $metodologi->id }}" {{ old('metodologi_analisa_data_id') == $metodologi->id ? 'selected' : '' }}>
+                            {{ $metodologi->nama }}
+                        </option>
+                    @endforeach
                 </select>
                 @error('metodologi_analisa_data_id')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -335,13 +323,11 @@
                 <label for="interpretasi_data_id" class="form-label">Interpretasi Data</label>
                 <select name="interpretasi_data_id" id="interpretasi_data_id" class="form-select @error('interpretasi_data_id') is-invalid @enderror" required>
                     <option value="">Pilih Interpretasi Data</option>
-                    <optgroup label="Interpretasi Data">
-                        @foreach($interpretasiData as $interpretasi)
-                            <option value="{{ $interpretasi->id }}" {{ old('interpretasi_data_id') == $interpretasi->id ? 'selected' : '' }}>
-                                {{ $interpretasi->name }}
-                            </option>
-                        @endforeach
-                    </optgroup>
+                    @foreach($interpretasiData as $interpretasi)
+                        <option value="{{ $interpretasi->id }}" {{ old('interpretasi_data_id') == $interpretasi->id ? 'selected' : '' }}>
+                            {{ $interpretasi->nama }}
+                        </option>
+                    @endforeach
                 </select>
                 @error('interpretasi_data_id')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -370,13 +356,11 @@
                 <label for="publikasi_data_id" class="form-label">Publikasi Data</label>
                 <select name="publikasi_data_id" id="publikasi_data_id" class="form-select @error('publikasi_data_id') is-invalid @enderror" required>
                     <option value="">Pilih Publikasi Data</option>
-                    <optgroup label="Publikasi Data">
-                        @foreach($publikasiData as $publikasi)
-                            <option value="{{ $publikasi->id }}" {{ old('publikasi_data_id') == $publikasi->id ? 'selected' : '' }}>
-                                {{ $publikasi->name }}
-                            </option>
-                        @endforeach
-                    </optgroup>
+                    @foreach($publikasiData as $publikasi)
+                        <option value="{{ $publikasi->id }}" {{ old('publikasi_data_id') == $publikasi->id ? 'selected' : '' }}>
+                            {{ $publikasi->nama }}
+                        </option>
+                    @endforeach
                 </select>
                 @error('publikasi_data_id')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -396,4 +380,40 @@
         </form>
     </div>
 </div>
+
+<style>
+.form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    color: #1e293b;
+    background-color: white;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 1px var(--primary-color);
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    color: #1e293b;
+    background-color: white;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 1px var(--primary-color);
+}
+</style>
 @endsection
