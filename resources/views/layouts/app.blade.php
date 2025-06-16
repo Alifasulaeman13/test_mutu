@@ -7,6 +7,7 @@
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    @vite('resources/css/app.css')
     <style>
         :root {
             --primary-color: #007774;
@@ -17,11 +18,11 @@
             --sidebar-width: 280px;
         }
 
-        * {
+        /* * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
+        } */
 
         body { 
             font-family: 'Instrument Sans', sans-serif; 
@@ -449,15 +450,48 @@
                 <div class="menu-section">
                     <div class="menu-section-title">Menu Utama</div>
                     <ul class="menu-list">
-                        <li class="menu-item">
-                            <a href="/dashboard" class="menu-link {{-- request()->is('dashboard') ? 'active' : '' --}}" data-menu-key="dashboard">
-                                <i class="ri-dashboard-line menu-icon"></i>
-                                Dashboard
-                            </a>
-                        </li>
+                        @php
+                            $userMenuAccess = Auth::user()->role->menuAccess->pluck('menu_key');
+                            $isAdmin = Auth::user()->role->slug === 'admin';
+                            
+                            // Debug untuk menu utama
+                            echo "<script>
+                                console.group('Debug Menu Utama');
+                                console.log('User Menu Access:', " . json_encode($userMenuAccess) . ");
+                                console.log('Menu Utama List:', " . json_encode($menuList['utama']) . ");
+                                console.log('Is Admin:', " . json_encode($isAdmin) . ");
+                                console.groupEnd();
+                            </script>";
+                        @endphp
+                        @foreach($menuList['utama'] as $menu)
+                            @if($isAdmin || $userMenuAccess->contains($menu['key']))
+                            <li class="menu-item">
+                                <a href="{{ $menu['route'] !== '#' ? route($menu['route']) : '#' }}" class="menu-link" data-menu-key="{{ $menu['key'] }}">
+                                    <i class="{{ $menu['icon'] }} menu-icon"></i>
+                                    {{ $menu['label'] }}
+                                </a>
+                            </li>
+                            @endif
+                        @endforeach
                     </ul>
                 </div>
 
+                @php
+                    // Debug untuk menu manajemen mutu
+                    echo "<script>
+                        console.group('Debug Menu Manajemen Mutu');
+                        console.log('User Menu Access:', " . json_encode($userMenuAccess) . ");
+                        console.log('Menu Master List:', " . json_encode($menuList['manajemen_mutu']) . ");
+                        console.log('Is Admin:', " . json_encode($isAdmin) . ");
+                        console.groupEnd();
+                    </script>";
+
+                    // Cek apakah user memiliki akses ke menu manajemen mutu
+                    $hasManajemenMutuAccess = $isAdmin || 
+                        $userMenuAccess->intersect(collect($menuList['manajemen_mutu'])->pluck('key'))->isNotEmpty();
+                @endphp
+
+                @if($hasManajemenMutuAccess)
                 <div class="menu-section">
                     <div class="menu-section-title">Menu</div>
                     <ul class="menu-list">
@@ -468,6 +502,8 @@
                                 <i class="ri-arrow-right-s-line menu-arrow"></i>
                             </a>
                             <ul class="submenu" id="manajemenMutuSubmenu">
+                                {{-- Master Indikator Mutu --}}
+                                @if($isAdmin || $userMenuAccess->intersect(collect($menuList['manajemen_mutu'])->pluck('key'))->isNotEmpty())
                                 <li class="submenu-item">
                                     <a href="#" class="submenu-link has-submenu" onclick="toggleSubmenu(event, 'masterIndikatorSubmenu')" data-menu-key="master_indikator">
                                         <i class="ri-star-line submenu-icon"></i>
@@ -475,72 +511,57 @@
                                         <i class="ri-arrow-right-s-line submenu-arrow"></i>
                                     </a>
                                     <ul class="submenu nested" id="masterIndikatorSubmenu">
-                                        <li>
-                                            <a href="{{ route('master-indikator.index') }}" class="submenu-link {{-- request()->routeIs('master-indikator.index') ? 'active' : '' --}}" data-menu-key="master_indikator">
-                                                <i class="ri-list-check-2 submenu-icon"></i>
-                                                Master Indikator
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ route('master-indikator.formula.index') }}" class="submenu-link {{-- request()->routeIs('master-indikator.formula.*') ? 'active' : '' --}}" data-menu-key="formula">
-                                                <i class="ri-functions submenu-icon"></i>
-                                                Formula
-                                            </a>
-                                        </li>
+                                        @foreach($menuList['manajemen_mutu'] as $menu)
+                                            @if($isAdmin || $userMenuAccess->contains($menu['key']))
+                                            <li>
+                                                <a href="{{ $menu['route'] !== '#' ? route($menu['route']) : '#' }}" class="submenu-link" data-menu-key="{{ $menu['key'] }}">
+                                                    <i class="{{ $menu['icon'] }} submenu-icon"></i>
+                                                    {{ $menu['label'] }}
+                                                </a>
+                                            </li>
+                                            @endif
+                                        @endforeach
                                     </ul>
                                 </li>
-                                <li class="submenu-item">
-                                    <a href="{{ route('laporan-analisis.index') }}" class="submenu-link {{-- request()->routeIs('laporan-analisis.*') ? 'active' : '' --}}" data-menu-key="laporan_analisis">
-                                        <i class="ri-file-chart-line submenu-icon"></i>
-                                        Laporan dan Analisis
-                                    </a>
-                                </li>
+                                @endif
                             </ul>
                         </li>
                     </ul>
                 </div>
+                @endif
 
+                @php
+                    // Debug untuk menu pengaturan
+                    echo "<script>
+                        console.group('Debug Menu Pengaturan');
+                        console.log('Menu Pengaturan List:', " . json_encode($menuList['pengaturan']) . ");
+                        console.log('User Menu Access:', " . json_encode($userMenuAccess) . ");
+                        console.log('Is Admin:', " . json_encode($isAdmin) . ");
+                        console.groupEnd();
+                    </script>";
+
+                    // Cek apakah user memiliki akses ke menu pengaturan
+                    $hasPengaturanAccess = $isAdmin || 
+                        $userMenuAccess->intersect(collect($menuList['pengaturan'])->pluck('key'))->isNotEmpty();
+                @endphp
+
+                @if($hasPengaturanAccess)
                 <div class="menu-section">
                     <div class="menu-section-title">Pengaturan</div>
                     <ul class="menu-list">
-                        <li class="menu-item">
-                            <a href="#" class="menu-link" data-menu-key="database">
-                                <i class="ri-database-2-line menu-icon"></i>
-                                Database
-                            </a>
-                        </li>
-                        <li class="menu-item">
-                            <a href="#" class="menu-link" data-menu-key="unit">
-                                <i class="ri-building-2-line menu-icon"></i>
-                                Unit
-                            </a>
-                        </li>
-                        <li class="menu-item">
-                            <a href="{{ route('master-users.index') }}" class="menu-link {{-- request()->routeIs('master-users.*') ? 'active' : '' --}}" data-menu-key="manajemen_user">
-                                <i class="ri-user-settings-line menu-icon"></i>
-                                Manajemen User
-                            </a>
-                        </li>
-                        <li class="menu-item">
-                            <a href="{{ route('manage-role.index') }}" class="menu-link {{-- request()->routeIs('manage-role.*') ? 'active' : '' --}}" data-menu-key="manage_role">
-                                <i class="ri-shield-user-line menu-icon"></i>
-                                Manage Role
-                            </a>
-                        </li>
-                        <li class="menu-item">
-                            <a href="{{ route('master.units.index') }}" class="menu-link {{-- request()->routeIs('master.units.*') ? 'active' : '' --}}" data-menu-key="manajemen_unit">
-                                <i class="ri-building-2-line menu-icon"></i>
-                                Manajemen Unit
-                            </a>
-                        </li>
-                        <li class="menu-item">
-                            <a href="{{ route('manage-akses.index') }}" class="menu-link {{-- request()->routeIs('manage-akses.*') ? 'active' : '' --}}" data-menu-key="hak_akses">
-                                <i class="ri-shield-check-line menu-icon"></i>
-                                Hak Akses
-                            </a>
-                        </li>
+                        @foreach($menuList['pengaturan'] as $menu)
+                            @if($isAdmin || $userMenuAccess->contains($menu['key']))
+                            <li class="menu-item">
+                                <a href="{{ $menu['route'] !== '#' ? route($menu['route']) : '#' }}" class="menu-link" data-menu-key="{{ $menu['key'] }}">
+                                    <i class="{{ $menu['icon'] }} menu-icon"></i>
+                                    {{ $menu['label'] }}
+                                </a>
+                            </li>
+                            @endif
+                        @endforeach
                     </ul>
                 </div>
+                @endif
             </div>
         </aside>
 

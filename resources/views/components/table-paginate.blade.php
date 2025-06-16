@@ -1,6 +1,6 @@
 @props([
     'columns' => [], // array: [ ['label'=>'No', 'field'=>'no'], ... ]
-    'data' => [], // array data
+    'data' => [], // array data atau paginator
     'pagination' => null, // Laravel paginator
     'filter' => false, // tampilkan filter/cari
     'title' => null, // judul tabel
@@ -12,7 +12,6 @@
             <i class="fa fa-table"></i> {{ $title }}
         </div>
     @endif
-    
     <div style="padding:12px 16px;">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
             <div>
@@ -40,50 +39,72 @@
             </div>
             @endif
         </div>
-
         <div style="overflow-x:auto;">
             <table style="width:100%; border-collapse:collapse;">
-                <thead style="background:#f8f8f8;">
-                    <tr>
-                        @foreach($columns as $col)
-                            <th style="padding:8px; border-bottom:1px solid #eee; text-align:left; font-weight:500;">
-                                {{ $col['label'] }}
-                            </th>
-                        @endforeach
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($data as $row)
+                @hasSection('head')
+                    <thead style="background:#f8f8f8;">
+                        @yield('head')
+                    </thead>
+                    <tbody>
+                        @yield('body')
+                    </tbody>
+                @elseif (isset($head) && isset($body))
+                    <thead style="background:#f8f8f8;">
+                        {{ $head }}
+                    </thead>
+                    <tbody>
+                        {{ $body }}
+                    </tbody>
+                @else
+                    <thead style="background:#f8f8f8;">
                         <tr>
                             @foreach($columns as $col)
-                                <td style="padding:8px; border-bottom:1px solid #f3f3f3;">
-                                    {!! $row[$col['field']] ?? '' !!}
-                                </td>
+                                <th style="padding:8px; border-bottom:1px solid #eee; text-align:left; font-weight:500;">
+                                    {{ $col['label'] }}
+                                </th>
                             @endforeach
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="{{ count($columns) }}" style="text-align:center; padding:16px; color:#888;">
-                                Tidak ada data
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
+                    </thead>
+                    <tbody>
+                        @forelse($data as $row)
+                            <tr>
+                                @foreach($columns as $col)
+                                    <td style="padding:8px; border-bottom:1px solid #f3f3f3;">
+                                        {!! $row[$col['field']] ?? '' !!}
+                                    </td>
+                                @endforeach
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="{{ count($columns) }}" style="text-align:center; padding:16px; color:#888;">
+                                    Tidak ada data
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                @endif
             </table>
         </div>
-
-        @if($pagination && count($data) > 0)
+        @if(($data instanceof \Illuminate\Pagination\LengthAwarePaginator && $data->count() > 0) || ($pagination && count($data) > 0))
             <div style="display:flex; align-items:center; justify-content:space-between; margin-top:1rem;">
                 <div style="color:#666;">
-                    Menampilkan {{ $pagination->firstItem() }} s/d {{ $pagination->lastItem() }} 
-                    dari {{ $pagination->total() }} data
+                    @if($data instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                        Menampilkan {{ $data->firstItem() }} s/d {{ $data->lastItem() }} 
+                        dari {{ $data->total() }} data
+                    @elseif($pagination)
+                        Menampilkan {{ $pagination->firstItem() }} s/d {{ $pagination->lastItem() }} 
+                        dari {{ $pagination->total() }} data
+                    @endif
                 </div>
                 <div>
-                    {{ $pagination->links() }}
+                    @if($data instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                        {{ $data->links() }}
+                    @elseif($pagination)
+                        {{ $pagination->links() }}
+                    @endif
                 </div>
             </div>
         @endif
     </div>
 </div>
-
 <form id="filterForm" method="GET"></form> 

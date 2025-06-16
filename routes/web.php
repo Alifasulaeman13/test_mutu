@@ -13,6 +13,15 @@ use App\Http\Controllers\DailyIndicatorDataController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MonthlyIndicatorDataController;
 use App\Http\Controllers\ManageAksesController;
+use App\Http\Controllers\CakupanDataController;
+use App\Http\Controllers\DimensiMutuController;
+use App\Http\Controllers\FrekuensiAnalisaDataController;
+use App\Http\Controllers\FrekuensiPengumpulanDataController;
+use App\Http\Controllers\InterpretasiDataController;
+use App\Http\Controllers\MetodologiAnalisaDataController;
+use App\Http\Controllers\MetodologiPengumpulanDataController;
+use App\Http\Controllers\PublikasiDataController;
+use App\Http\Controllers\KamusIndikatorMutuController;
 
 // Fungsi middleware untuk cek autentikasi
 function checkAuth($request, $next) {
@@ -345,6 +354,17 @@ Route::post('/logout', function (\Illuminate\Http\Request $request) {
         Route::put('/{monthlyData}', [MonthlyIndicatorDataController::class, 'update'])->name('update');
         Route::delete('/{monthlyData}', [MonthlyIndicatorDataController::class, 'destroy'])->name('destroy');
     });
+
+    // Routes untuk master data kamus indikator mutu
+    Route::resource('cakupan_data', CakupanDataController::class);
+    Route::resource('dimensi_mutu', DimensiMutuController::class);
+    Route::resource('frekuensi_analisa_data', FrekuensiAnalisaDataController::class);
+    Route::resource('frekuensi_pengumpulan_data', FrekuensiPengumpulanDataController::class);
+    Route::resource('interpretasi_data', InterpretasiDataController::class);
+    Route::resource('metodologi_analisa_data', MetodologiAnalisaDataController::class);
+    Route::resource('metodologi_pengumpulan_data', MetodologiPengumpulanDataController::class);
+    Route::resource('publikasi_data', PublikasiDataController::class);
+    Route::resource('kamus-indikator', KamusIndikatorMutuController::class);
 });
 
 // Routes untuk guest (belum login)
