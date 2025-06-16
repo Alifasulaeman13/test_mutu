@@ -301,11 +301,11 @@
         </div>
         <div class="stat-card">
             <div class="stat-title">Pencapaian ≥ 80%</div>
-            <div class="stat-value">{{ $stats['above_target'] ?? 0 }}</div>
+            <div class="stat-value" style="color: #22c55e;">{{ $stats['above_target'] ?? 0 }}</div>
         </div>
         <div class="stat-card">
             <div class="stat-title">Pencapaian < 80%</div>
-            <div class="stat-value">{{ $stats['below_target'] ?? 0 }}</div>
+            <div class="stat-value" style="color: #ef4444;">{{ $stats['below_target'] ?? 0 }}</div>
         </div>
     </div>
 
