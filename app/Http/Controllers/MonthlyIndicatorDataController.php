@@ -142,9 +142,6 @@ class MonthlyIndicatorDataController extends Controller
 
         // Set tanggal ke hari pertama bulan yang dipilih
         $date = Carbon::createFromDate($request->year, $request->month, 1);
-        
-        $validated['date'] = $date;
-        $validated['achievement_percentage'] = $achievement;
 
         // Cek duplikasi data
         $exists = MonthlyIndicatorData::where('indicator_id', $request->indicator_id)
@@ -157,7 +154,16 @@ class MonthlyIndicatorDataController extends Controller
                 ->withInput();
         }
 
-        MonthlyIndicatorData::create($validated);
+        // Buat array data yang akan disimpan, tanpa kolom month dan year
+        $data = [
+            'indicator_id' => $validated['indicator_id'],
+            'numerator' => $validated['numerator'],
+            'denominator' => $validated['denominator'],
+            'date' => $date,
+            'achievement_percentage' => $achievement
+        ];
+
+        MonthlyIndicatorData::create($data);
 
         return redirect()->route('laporan-analisis.index')
             ->with('success', 'Data bulanan berhasil ditambahkan');

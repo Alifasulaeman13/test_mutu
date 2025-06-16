@@ -13,6 +13,9 @@ class Indicator extends Model
 {
     use HasFactory;
 
+    protected $table = 'indicators';
+    protected $guarded = [];
+
     protected $fillable = [
         'unit_id',
         'name',
@@ -41,7 +44,7 @@ class Indicator extends Model
     // Relationship with monthly data
     public function monthlyData(): HasMany
     {
-        return $this->hasMany(MonthlyIndicatorData::class);
+        return $this->hasMany(MonthlyIndicatorData::class, 'indicator_id');
     }
 
     // Relationship with formulas

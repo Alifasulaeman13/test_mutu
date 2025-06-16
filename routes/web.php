@@ -22,6 +22,8 @@ use App\Http\Controllers\MetodologiAnalisaDataController;
 use App\Http\Controllers\MetodologiPengumpulanDataController;
 use App\Http\Controllers\PublikasiDataController;
 use App\Http\Controllers\KamusIndikatorMutuController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Api\DashboardChartController;
 
 // Fungsi middleware untuk cek autentikasi
 function checkAuth($request, $next) {
@@ -41,7 +43,7 @@ function checkGuest($request, $next) {
 
 Route::middleware(['web'])->group(function () {
     // Route untuk root
-Route::get('/', function () {
+    Route::get('/', function () {
         Log::info('Accessing root route');
         if (!session('is_logged_in')) {
             Log::info('Not logged in, redirecting to login');
@@ -52,7 +54,7 @@ Route::get('/', function () {
     });
 
     // Route untuk login
-Route::get('/login', function () {
+    Route::get('/login', function () {
         Log::info('Accessing login page', [
             'session' => session()->all()
         ]);
@@ -60,16 +62,16 @@ Route::get('/login', function () {
             return redirect('/dashboard');
         }
         return view('login');
-})->name('login');
+    })->name('login');
 
-Route::post('/login', function (\Illuminate\Http\Request $request) {
+    Route::post('/login', function (\Illuminate\Http\Request $request) {
         Log::info('Login attempt', [
             'username' => $request->input('username'),
             'session' => session()->all()
         ]);
         
-    $username = $request->input('username');
-    $password = $request->input('password');
+        $username = $request->input('username');
+        $password = $request->input('password');
         
         $user = User::where('username', $username)
             ->where('is_active', true)
@@ -90,22 +92,16 @@ Route::post('/login', function (\Illuminate\Http\Request $request) {
         }
         
         Log::info('Login failed');
-    return redirect('/login')->with('error', 'Username atau password salah!');
-});
+        return redirect('/login')->with('error', 'Username atau password salah!');
+    });
 
     // Route untuk dashboard (perlu login)
-    Route::get('/dashboard', function () {
-        Log::info('Accessing dashboard', [
-            'session' => session()->all()
-        ]);
-        if (!session('is_logged_in')) {
-        return redirect('/login');
-    }
-    return view('dashboard');
-});
+    Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
+        ->middleware('auth')
+        ->name('dashboard');
 
     // Route untuk logout
-Route::post('/logout', function (\Illuminate\Http\Request $request) {
+    Route::post('/logout', function (\Illuminate\Http\Request $request) {
         Log::info('Logging out');
         session()->forget('is_logged_in');
         session()->flush();
@@ -365,6 +361,9 @@ Route::post('/logout', function (\Illuminate\Http\Request $request) {
     Route::resource('metodologi_pengumpulan_data', MetodologiPengumpulanDataController::class);
     Route::resource('publikasi_data', PublikasiDataController::class);
     Route::resource('kamus-indikator', KamusIndikatorMutuController::class);
+
+    // Dashboard Chart Data
+    Route::get('/chart-data', [DashboardChartController::class, 'getChartData'])->name('api.dashboard.chart-data');
 });
 
 // Routes untuk guest (belum login)
@@ -377,11 +376,6 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
     
-    // Dashboard
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
-
     // Laporan & Analisis Routes
     Route::prefix('laporan-analisis')->name('laporan-analisis.')->group(function () {
         Route::get('/', [MonthlyIndicatorDataController::class, 'index'])->name('index');
@@ -395,4 +389,8 @@ Route::middleware('auth')->group(function () {
     // Routes untuk manajemen hak akses
     Route::get('/manage-akses', [ManageAksesController::class, 'index'])->name('manage-akses.index');
     Route::post('/manage-akses', [ManageAksesController::class, 'store'])->name('manage-akses.store');
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });

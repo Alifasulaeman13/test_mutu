@@ -2,20 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
 class MonthlyIndicatorData extends Model
 {
-    protected $table = 'monthly_indicator_data';
+    use HasFactory;
 
-    protected $fillable = [
-        'indicator_id',
-        'date',
-        'numerator',
-        'denominator',
-        'achievement_percentage'
-    ];
+    protected $table = 'monthly_indicator_data';
+    protected $guarded = [];
 
     protected $casts = [
         'date' => 'date',
@@ -27,7 +23,7 @@ class MonthlyIndicatorData extends Model
     // Relasi ke model Indicator
     public function indicator()
     {
-        return $this->belongsTo(Indicator::class);
+        return $this->belongsTo(Indicator::class, 'indicator_id');
     }
 
     // Accessor untuk mendapatkan bulan dalam format nama
