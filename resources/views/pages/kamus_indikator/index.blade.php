@@ -159,7 +159,7 @@
                         <i class="ri-file-excel-2-line"></i>
                         Export Excel
                     </a>
-                    <a href="#" class="action-dropdown-item">
+                    <a href="{{ route('kamus-indikator.export-pdf') }}" class="action-dropdown-item">
                         <i class="ri-file-pdf-line"></i>
                         Export PDF
                     </a>

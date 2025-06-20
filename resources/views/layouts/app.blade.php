@@ -7,6 +7,7 @@
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     @vite('resources/css/app.css')
     <style>
         :root {
@@ -598,10 +599,6 @@
                         <span>Manajemen Data Mutu</span>
                         <i class="ri-arrow-right-s-line"></i>
                         <span>Master Indikator Mutu</span>
-                        @if(str_contains($currentPath, 'formula'))
-                            <i class="ri-arrow-right-s-line"></i>
-                            <span>Formula</span>
-                        @endif
                     @elseif(str_contains($currentPath, 'laporan-analisis'))
                         <i class="ri-arrow-right-s-line"></i>
                         <span>Manajemen Data Mutu</span>

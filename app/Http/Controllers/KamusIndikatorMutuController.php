@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class KamusIndikatorMutuController extends Controller
 {
@@ -276,6 +277,50 @@ class KamusIndikatorMutuController extends Controller
         } catch (\Exception $e) {
             Log::error('Error exporting Kamus Indikator Mutu: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan saat mengexport data: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export data to PDF
+     */
+    public function exportPdf()
+    {
+        try {
+            $kamusIndikator = KamusIndikatorMutu::with([
+                'indicator',
+                'dimensiMutu',
+                'metodologiPengumpulan',
+                'cakupanData',
+                'frekuensiPengumpulan',
+                'frekuensiAnalisa',
+                'metodologiAnalisa',
+                'interpretasiData',
+                'publikasiData'
+            ])->get();
+
+            // Mapping data untuk PDF - menggunakan format yang sama dengan index()
+            $data = $kamusIndikator->map(function($item, $index) {
+                return [
+                    'no' => $index + 1,
+                    'nama_indikator' => $item->indicator->name ?? '-',
+                    'dimensi_mutu' => $item->dimensiMutu->nama ?? '-',
+                    'metodologi_pengumpulan' => $item->metodologiPengumpulan->nama ?? '-',
+                    'cakupan_data' => $item->cakupanData->nama ?? '-',
+                    'frekuensi_pengumpulan' => $item->frekuensiPengumpulan->nama ?? '-',
+                    'frekuensi_analisa' => $item->frekuensiAnalisa->nama ?? '-',
+                    'metodologi_analisa' => $item->metodologiAnalisa->nama ?? '-',
+                    'interpretasi' => $item->interpretasiData->nama ?? '-',
+                    'publikasi' => $item->publikasiData->nama ?? '-',
+                ];
+            });
+
+            $pdf = PDF::loadView('exports.kamus-indikator-pdf', ['data' => $data]);
+            $pdf->setPaper('A4', 'landscape');
+            
+            return $pdf->download('kamus_indikator_mutu_' . now()->format('d-m-Y_H-i-s') . '.pdf');
+        } catch (\Exception $e) {
+            Log::error('Error exporting Kamus Indikator Mutu to PDF: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat mengexport PDF: ' . $e->getMessage());
         }
     }
 }

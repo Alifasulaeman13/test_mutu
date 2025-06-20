@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             UnitSeeder::class,
             AdminSeeder::class,
             MenuAccessSeeder::class,
+            KamusIndikatorMutuMasterSeeder::class,
         ]);
     }
 }

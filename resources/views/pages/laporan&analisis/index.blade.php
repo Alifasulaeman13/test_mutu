@@ -3,6 +3,155 @@
 @section('title', 'Laporan & Analisis')
 @section('page-title', 'Laporan & Analisis')
 
+@push('scripts')
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+// Definisikan fungsi-fungsi sebagai variabel global
+window.modalHandler = {
+    bukaModal: function(indicatorId) {
+        // Set ID indikator
+        document.getElementById('modalIndicatorId').value = indicatorId;
+        
+        // Ambil nilai bulan dan tahun dari filter
+        const filterBulan = document.getElementById('bulan').value;
+        const filterTahun = document.getElementById('tahun').value;
+        
+        // Set nilai bulan dan tahun di modal sesuai filter
+        const monthSelect = document.getElementById('month');
+        const yearSelect = document.getElementById('year');
+        
+        monthSelect.value = filterBulan;
+        yearSelect.value = filterTahun;
+        
+        // Tampilkan modal
+        document.getElementById('inputModal').style.display = 'block';
+        
+        // Atur style untuk field yang readonly
+        [monthSelect, yearSelect].forEach(function(select) {
+            select.style.backgroundColor = '#f1f5f9';
+            select.style.cursor = 'not-allowed';
+            
+            // Cegah perubahan
+            select.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+            });
+        });
+    },
+
+    tutupModal: function() {
+        document.getElementById('inputModal').style.display = 'none';
+        document.getElementById('inputForm').reset();
+        
+        // Reset kembali nilai bulan dan tahun sesuai filter
+        const filterBulan = document.getElementById('bulan').value;
+        const filterTahun = document.getElementById('tahun').value;
+        const monthSelect = document.getElementById('month');
+        const yearSelect = document.getElementById('year');
+        
+        monthSelect.value = filterBulan;
+        yearSelect.value = filterTahun;
+    }
+};
+
+// Ketika dokumen sudah siap
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('inputModal');
+    const form = document.getElementById('inputForm');
+
+    // Tutup modal ketika klik di luar modal
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            window.modalHandler.tutupModal();
+        }
+    };
+
+    // Handle submit form
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Buat objek FormData dari form
+        const formData = new FormData(this);
+        
+        // Tambahkan header X-Requested-With untuk menandai ini sebagai request AJAX
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
+        })
+        .then(async response => {
+            // Baca response sebagai text dan parse sebagai JSON
+            const responseText = await response.text();
+            let data;
+            
+            try {
+                data = JSON.parse(responseText);
+            } catch (e) {
+                throw new Error('Terjadi kesalahan saat memproses response dari server');
+            }
+            
+            // Jika ada pesan dari server, gunakan itu
+            if (data.message) {
+                if (!response.ok) {
+                    throw new Error(data.message);
+                }
+            } else if (!response.ok) {
+                // Jika tidak ada pesan spesifik
+                if (response.status === 403) {
+                    throw new Error('Anda tidak memiliki akses untuk melakukan tindakan ini');
+                } else if (response.status === 422 && data.errors) {
+                    throw new Error(Object.values(data.errors).flat().join('\n'));
+                } else {
+                    throw new Error('Terjadi kesalahan pada server');
+                }
+            }
+            
+            return data;
+        })
+        .then(data => {
+            if (data.success) {
+                // Tutup modal
+                window.modalHandler.tutupModal();
+                
+                // Tampilkan SweetAlert untuk sukses
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: data.message || 'Data berhasil disimpan',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    // Reload halaman setelah alert tertutup
+                    window.location.reload();
+                });
+            } else {
+                throw new Error(data.message || 'Terjadi kesalahan yang tidak diketahui');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Tampilkan SweetAlert untuk error
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: error.message || 'Terjadi kesalahan. Silakan coba lagi.'
+            });
+            
+            // Jika error berkaitan dengan akses, tutup modal
+            if (error.message.toLowerCase().includes('akses')) {
+                window.modalHandler.tutupModal();
+            }
+        });
+    });
+});
+</script>
+@endpush
+
 @section('styles')
 .dashboard-section {
     background: white;
@@ -314,6 +463,72 @@
     background: #e2e8f0;
     color: #475569;
 }
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: relative;
+    background-color: white;
+    margin: 2rem auto;
+    padding: 1rem;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 8px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: #64748b;
+}
+
+.modal-header {
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 1px var(--primary-color);
+}
+
+.invalid-feedback {
+    color: #dc2626;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
 @endsection
 
 @section('content')
@@ -394,12 +609,11 @@
                     <tr>
                         <th class="column-header">NO</th>
                         <th class="column-header">INDIKATOR</th>
+                        <th class="column-header">PERIODE</th>
                         <th class="column-header">UNIT</th>
                         <th class="column-header">TARGET</th>
-                        <th class="column-header">NUMERATOR</th>
-                        <th class="column-header">DENOMINATOR</th>
+                        <th class="column-header">NILAI</th>
                         <th class="column-header">PENCAPAIAN</th>
-                        <th class="column-header">PERIODE</th>
                         <th class="column-header">STATUS</th>
                         <th class="column-header">AKSI</th>
                     </tr>
@@ -409,18 +623,14 @@
                         <tr class="table-row {{ !$data['has_data'] ? 'table-row-empty' : '' }}">
                             <td class="column-cell">{{ $index + 1 }}</td>
                             <td class="column-cell">{{ $data['indikator'] }}</td>
+                            <td class="column-cell">
+                                {{ $data['periode']['bulan'] }} {{ $data['periode']['tahun'] }}
+                            </td>
                             <td class="column-cell">{{ $data['unit'] }}</td>
                             <td class="column-cell">{{ $data['target'] }}</td>
                             <td class="column-cell">
                                 @if($data['has_data'])
-                                    {{ $data['numerator'] }}
-                                @else
-                                    <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                            <td class="column-cell">
-                                @if($data['has_data'])
-                                    {{ $data['denominator'] }}
+                                    {{ $data['numerator'] }}/{{ $data['denominator'] }}
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif
@@ -439,9 +649,6 @@
                                         Belum Ada Data
                                     </span>
                                 @endif
-                            </td>
-                            <td class="column-cell">
-                                {{ $data['periode']['bulan'] }} {{ $data['periode']['tahun'] }}
                             </td>
                             <td class="column-cell">
                                 <span class="badge badge-{{ $data['status_periode'] === 'Aktif' ? 'success' : 'warning' }}">
@@ -465,11 +672,12 @@
                                             </button>
                                         </form>
                                     @else
-                                        <a href="{{ route('laporan-analisis.create') }}?indicator_id={{ $data['id'] }}" 
-                                           class="btn btn-primary btn-sm">
+                                        <button type="button" 
+                                           class="btn btn-primary btn-sm"
+                                           onclick="window.modalHandler.bukaModal({{ $data['id'] }})">
                                             <i class="ri-add-line"></i>
                                             Input Data
-                                        </a>
+                                        </button>
                                     @endif
                                 </div>
                             </td>
@@ -487,8 +695,70 @@
     </div>
 </div>
 
-@endsection
+<!-- Modal Input Data -->
+<div id="inputModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="window.modalHandler.tutupModal()">&times;</span>
+        <div class="modal-header">
+            <h3 class="modal-title">
+                <i class="ri-add-line"></i>
+                Tambah Data Indikator
+            </h3>
+        </div>
+        <div class="modal-body">
+            <form id="inputForm" action="{{ route('laporan-analisis.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                
+                <input type="hidden" name="indicator_id" id="modalIndicatorId">
+                
+                <div class="form-group">
+                    <label for="month" class="form-label">Bulan</label>
+                    <select name="month" id="month" class="form-select" required readonly>
+                        @foreach(range(1, 12) as $month)
+                            <option value="{{ $month }}" {{ $currentMonth == $month ? 'selected' : '' }}>
+                                {{ date('F', mktime(0, 0, 0, $month, 1)) }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-@section('scripts')
-<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+                <div class="form-group">
+                    <label for="year" class="form-label">Tahun</label>
+                    <select name="year" id="year" class="form-select" required readonly>
+                        @foreach(range(date('Y')-5, date('Y')+5) as $year)
+                            <option value="{{ $year }}" {{ $currentYear == $year ? 'selected' : '' }}>
+                                {{ $year }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="numerator" class="form-label">Numerator</label>
+                    <input type="number" name="numerator" id="numerator" class="form-input"
+                        min="0" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="denominator" class="form-label">Denominator</label>
+                    <input type="number" name="denominator" id="denominator" class="form-input"
+                        min="1" required>
+                </div>
+
+                <div class="flex justify-end space-x-2">
+                    <button type="button" class="btn btn-outline" onclick="window.modalHandler.tutupModal()">
+                        <i class="ri-close-line"></i>
+                        Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ri-save-line"></i>
+                        Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection 

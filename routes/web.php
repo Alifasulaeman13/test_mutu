@@ -353,6 +353,7 @@ Route::middleware(['web'])->group(function () {
 
     // Routes untuk master data kamus indikator mutu
     Route::get('kamus-indikator/export', [KamusIndikatorMutuController::class, 'export'])->name('kamus-indikator.export');
+    Route::get('kamus-indikator/export-pdf', [KamusIndikatorMutuController::class, 'exportPdf'])->name('kamus-indikator.export-pdf');
     Route::resource('cakupan_data', CakupanDataController::class);
     Route::resource('dimensi_mutu', DimensiMutuController::class);
     Route::resource('frekuensi_analisa_data', FrekuensiAnalisaDataController::class);

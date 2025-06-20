@@ -59,23 +59,16 @@ class KamusIndikatorMutuMasterSeeder extends Seeder
             ['nama' => 'Eksternal'],
         ]);
 
-        // Tambah menu Kamus Indikator Mutu ke tabel menu_access (atau menu/akses yang digunakan)
+        // Tambah menu Kamus Indikator Mutu ke tabel menu_access
         $menuKey = 'kamus_indikator_mutu';
-        $menuName = 'Kamus Indikator Mutu';
-        $menuRoute = 'kamus-indikator.index';
 
-        // Contoh: tambahkan ke menu_access untuk role admin
+        // Tambahkan ke menu_access untuk role admin
         $adminRoleId = DB::table('roles')->where('slug', 'admin')->value('id');
         if ($adminRoleId) {
             DB::table('menu_access')->updateOrInsert([
                 'role_id' => $adminRoleId,
                 'menu_key' => $menuKey
-            ], [
-                'menu_name' => $menuName,
-                'menu_route' => $menuRoute
             ]);
         }
-
-        // Tambahkan juga ke role lain jika perlu
     }
 } 

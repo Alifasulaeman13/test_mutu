@@ -9,7 +9,7 @@ use Illuminate\Database\Seeder;
 class MenuAccessSeeder extends Seeder
 {
     protected $defaultMenus = [
-        'dashboard', 'master_indikator', 'formula', 'laporan_analisis',
+        'dashboard', 'master_indikator', 'laporan_analisis',
         'database', 'unit', 'manajemen_user', 'manage_role', 'manajemen_unit', 'hak_akses',
         'cakupan_data', 'dimensi_mutu', 'frekuensi_analisa_data', 'frekuensi_pengumpulan_data',
         'interpretasi_data', 'metodologi_analisa_data', 'metodologi_pengumpulan_data', 'publikasi_data'
@@ -19,7 +19,7 @@ class MenuAccessSeeder extends Seeder
         'unit_head' => ['dashboard', 'laporan_analisis'],
         'unit_staff' => ['dashboard', 'laporan_analisis'],
         'quality_team' => [
-            'dashboard', 'master_indikator', 'formula', 'laporan_analisis',
+            'dashboard', 'master_indikator', 'laporan_analisis',
             'cakupan_data', 'dimensi_mutu', 'frekuensi_analisa_data', 'frekuensi_pengumpulan_data',
             'interpretasi_data', 'metodologi_analisa_data', 'metodologi_pengumpulan_data', 'publikasi_data'
         ],

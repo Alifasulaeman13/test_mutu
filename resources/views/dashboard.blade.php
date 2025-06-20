@@ -288,23 +288,47 @@
     </div>
 @endif
 
+<!-- Hidden input untuk menyimpan informasi user -->
+<input type="hidden" id="userUnitId" value="{{ auth()->user()->unit_id ?? '' }}">
+<input type="hidden" id="isAdmin" value="{{ auth()->user()->isAdmin() ? '1' : '0' }}">
+
 <div class="container">
     <!-- Statistics Section -->
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-title">Total Indikator</div>
+            <div class="stat-title">
+                Total Indikator
+                @if(!auth()->user()->isAdmin())
+                    Unit {{ auth()->user()->unit->name ?? '' }}
+                @endif
+            </div>
             <div class="stat-value">{{ $stats['total_indicators'] ?? 0 }}</div>
         </div>
         <div class="stat-card">
-            <div class="stat-title">Indikator Aktif</div>
+            <div class="stat-title">
+                Indikator Aktif
+                @if(!auth()->user()->isAdmin())
+                    Unit {{ auth()->user()->unit->name ?? '' }}
+                @endif
+            </div>
             <div class="stat-value">{{ $stats['active_indicators'] ?? 0 }}</div>
         </div>
         <div class="stat-card">
-            <div class="stat-title">Pencapaian ≥ 80%</div>
+            <div class="stat-title">
+                Indikator Tercapai
+                @if(!auth()->user()->isAdmin())
+                    Unit {{ auth()->user()->unit->name ?? '' }}
+                @endif
+            </div>
             <div class="stat-value" style="color: #22c55e;">{{ $stats['above_target'] ?? 0 }}</div>
         </div>
         <div class="stat-card">
-            <div class="stat-title">Pencapaian < 80%</div>
+            <div class="stat-title">
+                Indikator Tidak Tercapai
+                @if(!auth()->user()->isAdmin())
+                    Unit {{ auth()->user()->unit->name ?? '' }}
+                @endif
+            </div>
             <div class="stat-value" style="color: #ef4444;">{{ $stats['below_target'] ?? 0 }}</div>
         </div>
     </div>
@@ -582,7 +606,12 @@
     <!-- Chart Section -->
     <div class="chart-container">
         <div class="chart-header">
-            <h3 class="chart-title">Rata-rata Pencapaian Indikator</h3>
+            <h3 class="chart-title">
+                Rata-rata Pencapaian Indikator
+                @if(!auth()->user()->isAdmin())
+                    Unit {{ auth()->user()->unit->name ?? '' }}
+                @endif
+            </h3>
             <div class="chart-filters">
                 <div class="filter-group">
                     <select id="yearFilter" class="filter-select">
@@ -591,10 +620,6 @@
                                 Tahun {{ $y }}
                             </option>
                         @endfor
-                    </select>
-                    <select id="periodFilter" class="filter-select">
-                        <option value="6" {{ request('period', '6') == '6' ? 'selected' : '' }}>6 Bulan Terakhir</option>
-                        <option value="12" {{ request('period') == '12' ? 'selected' : '' }}>1 Tahun</option>
                     </select>
                 </div>
                 <div class="chart-legend">
@@ -626,6 +651,9 @@ document.addEventListener('DOMContentLoaded', function() {
         data: @json($data),
         details: @json($details ?? [])
     };
+    
+    const userUnitId = document.getElementById('userUnitId').value;
+    const isAdmin = document.getElementById('isAdmin').value === '1';
     
     function createChart(chartData) {
         console.log('Creating/updating chart with data:', chartData);
@@ -698,8 +726,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        max: 500,
+                        max: 100,
                         ticks: {
+                            stepSize: 25,
                             callback: function(value) {
                                 return value + '%';
                             }
@@ -718,16 +747,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    function updateChart(year, period) {
-        console.log('Updating chart with filters:', { year, period });
+    function updateChart(year) {
+        console.log('Updating chart with year:', year);
         
         // Show loading state
         const wrapper = document.querySelector('.chart-wrapper');
         wrapper.style.opacity = '0.5';
         
-        // Build URL with base path
+        // Build URL with base path and include unit_id if not admin
         const basePath = '{{ url('/') }}';
-        const url = `${basePath}/chart-data?year=${year}&period=${period}`;
+        let url = `${basePath}/chart-data?year=${year}`;
+        if (!isAdmin && userUnitId) {
+            url += `&unit_id=${userUnitId}`;
+        }
         console.log('Fetching data from:', url);
         
         fetch(url, {
@@ -760,18 +792,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Event listeners for filters
+    // Event listener for year filter
     const yearFilter = document.getElementById('yearFilter');
-    const periodFilter = document.getElementById('periodFilter');
-
     yearFilter.addEventListener('change', function() {
         console.log('Year filter changed:', this.value);
-        updateChart(this.value, periodFilter.value);
-    });
-
-    periodFilter.addEventListener('change', function() {
-        console.log('Period filter changed:', this.value);
-        updateChart(yearFilter.value, this.value);
+        updateChart(this.value);
     });
 
     // Initial chart load with data from server

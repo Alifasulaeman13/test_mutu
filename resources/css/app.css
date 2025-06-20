@@ -11,3 +11,69 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .form-group {
+        @apply mb-4;
+    }
+
+    .form-label {
+        @apply block mb-2 text-sm font-medium text-gray-700;
+    }
+
+    .form-input {
+        @apply block w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500;
+    }
+
+    .form-select {
+        @apply block w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500;
+    }
+
+    .form-check {
+        @apply flex items-center;
+    }
+
+    .form-check-input {
+        @apply w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500;
+    }
+
+    .form-check-label {
+        @apply ml-2 text-sm text-gray-700;
+    }
+
+    .input-group {
+        @apply flex;
+    }
+
+    .input-group-text {
+        @apply inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md;
+    }
+
+    .input-group .form-input {
+        @apply rounded-r-none;
+    }
+
+    .invalid-feedback {
+        @apply mt-1 text-sm text-red-600;
+    }
+
+    .is-invalid {
+        @apply border-red-500 focus:border-red-500 focus:ring-red-500;
+    }
+
+    .btn {
+        @apply inline-flex items-center px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2;
+    }
+
+    .btn-primary {
+        @apply text-white bg-teal-600 hover:bg-teal-700 focus:ring-teal-500;
+    }
+
+    .btn-outline {
+        @apply text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:ring-teal-500;
+    }
+}

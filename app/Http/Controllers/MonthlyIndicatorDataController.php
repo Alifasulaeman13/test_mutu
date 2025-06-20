@@ -39,7 +39,9 @@ class MonthlyIndicatorDataController extends Controller
         // Siapkan data untuk view
         $displayData = $indicators->map(function ($indicator) use ($monthlyData, $currentMonth, $currentYear) {
             $data = $monthlyData->get($indicator->id);
-            $period = $indicator->getCurrentReportingPeriod();
+            
+            // Buat objek Carbon untuk tanggal 1 di bulan dan tahun yang dipilih
+            $date = Carbon::createFromDate($currentYear, $currentMonth, 1);
             
             return [
                 'id' => $indicator->id,
@@ -50,8 +52,8 @@ class MonthlyIndicatorDataController extends Controller
                 'denominator' => $data ? $data->denominator : null,
                 'total' => $data ? $data->achievement_percentage : null,
                 'periode' => [
-                    'bulan' => Carbon::create()->month($period['month'])->format('F'),
-                    'tahun' => $period['year']
+                    'bulan' => $date->format('F'),
+                    'tahun' => $currentYear
                 ],
                 'status_periode' => $indicator->isWithinReportingPeriod() ? 'Aktif' : 'Tidak Aktif',
                 'data_id' => $data ? $data->id : null,
@@ -101,60 +103,69 @@ class MonthlyIndicatorDataController extends Controller
 
     public function store(Request $request)
     {
+        // Validate the request
         $validated = $request->validate([
             'indicator_id' => 'required|exists:indicators,id',
+            'numerator' => 'required|numeric|min:0',
+            'denominator' => 'required|numeric|min:1',
             'month' => 'required|integer|min:1|max:12',
-            'year' => 'required|integer|min:2000',
-            'numerator' => 'required|integer|min:0',
-            'denominator' => 'required|integer|min:1',
+            'year' => 'required|integer|min:2000|max:2100',
         ]);
 
-        // Cek apakah user adalah Administrator
-        $isAdmin = auth()->user()->isAdmin();
+        // Get the indicator
+        $indicator = Indicator::findOrFail($validated['indicator_id']);
 
-        // Cek akses user ke indikator jika bukan admin
-        if (!$isAdmin) {
-            $indicator = Indicator::where('id', $request->indicator_id)
-                ->where('unit_id', auth()->user()->unit->id)
-                ->first();
-
-            if (!$indicator) {
-                return back()->withErrors(['indicator_id' => 'Anda tidak memiliki akses ke indikator ini'])
-                    ->withInput();
+        // Check if user has access to this indicator
+        // Skip unit check if user is admin
+        if (!auth()->user()->isAdmin() && auth()->user()->unit) {
+            if ($indicator->unit_id !== auth()->user()->unit->id) {
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Anda tidak memiliki akses untuk menambahkan data indikator ini'
+                    ], 403);
+                }
+                return redirect()->route('laporan-analisis.index')
+                    ->with('error', 'Anda tidak memiliki akses untuk menambahkan data indikator ini');
             }
         }
 
-        $indicator = Indicator::with('activeFormula')->find($request->indicator_id);
-
-        // Cek periode pengisian jika bukan admin
-        if (!$isAdmin && !$indicator->isWithinReportingPeriod()) {
-            return back()->withErrors(['month' => 'Periode pengisian data sudah berakhir'])
-                ->withInput();
+        // Check if within reporting period
+        if (!$indicator->isWithinReportingPeriod()) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Periode pengisian data sudah berakhir'
+                ], 403);
+            }
+            return redirect()->route('laporan-analisis.index')
+                ->with('error', 'Periode pengisian data sudah berakhir');
         }
 
-        $formula = $indicator->activeFormula;
+        // Create date from month and year
+        $date = Carbon::createFromDate($validated['year'], $validated['month'], 1);
 
-        if ($formula) {
-            $achievement = $formula->calculateResult($request->numerator, $request->denominator);
-        } else {
-            $achievement = ($request->numerator / $request->denominator) * 100;
-        }
+        // Calculate achievement percentage
+        $achievement = ($validated['numerator'] / $validated['denominator']) * 100;
 
-        // Set tanggal ke hari pertama bulan yang dipilih
-        $date = Carbon::createFromDate($request->year, $request->month, 1);
-
-        // Cek duplikasi data
-        $exists = MonthlyIndicatorData::where('indicator_id', $request->indicator_id)
-            ->whereYear('date', $request->year)
-            ->whereMonth('date', $request->month)
+        // Check if data already exists for this month
+        $exists = MonthlyIndicatorData::where('indicator_id', $validated['indicator_id'])
+            ->whereYear('date', $validated['year'])
+            ->whereMonth('date', $validated['month'])
             ->exists();
 
         if ($exists) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data untuk bulan ini sudah ada'
+                ], 422);
+            }
             return back()->withErrors(['month' => 'Data untuk bulan ini sudah ada'])
                 ->withInput();
         }
 
-        // Buat array data yang akan disimpan, tanpa kolom month dan year
+        // Create data array
         $data = [
             'indicator_id' => $validated['indicator_id'],
             'numerator' => $validated['numerator'],
@@ -163,7 +174,15 @@ class MonthlyIndicatorDataController extends Controller
             'achievement_percentage' => $achievement
         ];
 
+        // Create the record
         MonthlyIndicatorData::create($data);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Data bulanan berhasil ditambahkan'
+            ]);
+        }
 
         return redirect()->route('laporan-analisis.index')
             ->with('success', 'Data bulanan berhasil ditambahkan');

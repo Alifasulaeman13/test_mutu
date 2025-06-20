@@ -44,7 +44,6 @@ class AppServiceProvider extends ServiceProvider
             ],
             'manajemen_mutu' => [
                 [ 'key' => 'master_indikator', 'label' => 'Master Indikator', 'icon' => 'ri-list-check-2', 'route' => 'master-indikator.index' ],
-                [ 'key' => 'formula', 'label' => 'Formula', 'icon' => 'ri-functions', 'route' => 'master-indikator.formula.index' ],
                 [ 'key' => 'cakupan_data', 'label' => 'Cakupan Data', 'icon' => 'ri-checkbox-multiple-blank-line', 'route' => 'cakupan_data.index' ],
                 [ 'key' => 'dimensi_mutu', 'label' => 'Dimensi Mutu', 'icon' => 'ri-shape-2-line', 'route' => 'dimensi_mutu.index' ],
                 [ 'key' => 'frekuensi_analisa_data', 'label' => 'Frekuensi Analisa Data', 'icon' => 'ri-bar-chart-2-line', 'route' => 'frekuensi_analisa_data.index' ],

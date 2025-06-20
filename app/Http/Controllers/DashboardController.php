@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Routing\Controller as BaseController;
+use Carbon\Carbon;
 
 class DashboardController extends BaseController
 {
@@ -23,12 +24,28 @@ class DashboardController extends BaseController
         ];
     }
 
+    private function generateMonthsArray($year)
+    {
+        $months = [];
+        for ($month = 1; $month <= 12; $month++) {
+            $date = Carbon::createFromDate($year, $month, 1);
+            $months[] = [
+                'month_year' => $date->format('F Y'),
+                'month_num' => $month,
+                'avg_achievement' => 0,
+                'indicator_details' => ''
+            ];
+        }
+        return $months;
+    }
+
     public function index()
     {
         // Initialize default values
         $stats = $this->getDefaultStats();
         $labels = [];
         $data = [];
+        $details = [];
         $error = null;
         $debug = [
             'raw_indicators' => [],
@@ -40,56 +57,122 @@ class DashboardController extends BaseController
             $dbName = DB::connection()->getDatabaseName();
             Log::info("Database connection", ['database' => $dbName]);
 
+            // Get user's unit ID if not admin
+            $isAdmin = auth()->user()->isAdmin();
+            $unitId = !$isAdmin ? auth()->user()->unit_id : null;
+
+            // Base query for indicators
+            $indicatorQuery = DB::table('indicators');
+            if ($unitId) {
+                $indicatorQuery->where('unit_id', $unitId);
+            }
+
             // Get raw data first to verify
-            $debug['raw_indicators'] = DB::select("SELECT * FROM indicators") ?? [];
-            $debug['raw_monthly'] = DB::select("SELECT * FROM monthly_indicator_data") ?? [];
+            $debug['raw_indicators'] = $indicatorQuery->get() ?? [];
+            
+            // Get monthly data query
+            $monthlyQuery = DB::table('monthly_indicator_data')
+                ->join('indicators', 'monthly_indicator_data.indicator_id', '=', 'indicators.id');
+            if ($unitId) {
+                $monthlyQuery->where('indicators.unit_id', $unitId);
+            }
+            $debug['raw_monthly'] = $monthlyQuery->get() ?? [];
             
             Log::info("Raw data check", [
                 'indicators_count' => count($debug['raw_indicators']),
                 'monthly_data_count' => count($debug['raw_monthly']),
                 'first_indicator' => $debug['raw_indicators'][0] ?? null,
-                'first_monthly' => $debug['raw_monthly'][0] ?? null
+                'first_monthly' => $debug['raw_monthly'][0] ?? null,
+                'unit_id' => $unitId,
+                'is_admin' => $isAdmin
             ]);
 
             // Get total indicators
-            $totalQuery = DB::select("SELECT COUNT(*) as total FROM indicators");
-            $stats['total_indicators'] = $totalQuery[0]->total ?? 0;
+            $stats['total_indicators'] = $indicatorQuery->count() ?? 0;
             
             // Get active indicators
-            $activeQuery = DB::select("SELECT COUNT(*) as total FROM indicators WHERE is_active = 1");
-            $stats['active_indicators'] = $activeQuery[0]->total ?? 0;
+            $stats['active_indicators'] = $indicatorQuery->where('is_active', true)->count() ?? 0;
             
-            // Get achievement counts
-            $achievementQuery = DB::select("
-                SELECT 
-                    COUNT(CASE WHEN achievement_percentage >= 80 THEN 1 END) as above_target,
-                    COUNT(CASE WHEN achievement_percentage < 80 THEN 1 END) as below_target
-                FROM monthly_indicator_data
-            ");
+            // Get achievement counts for the current year
+            $currentYear = date('Y');
+            $achievementQuery = $monthlyQuery
+                ->whereYear('date', $currentYear)
+                ->select(
+                    DB::raw('COUNT(CASE WHEN achievement_percentage >= 80 THEN 1 END) as above_target'),
+                    DB::raw('COUNT(CASE WHEN achievement_percentage < 80 THEN 1 END) as below_target')
+                )->first();
             
-            $stats['above_target'] = $achievementQuery[0]->above_target ?? 0;
-            $stats['below_target'] = $achievementQuery[0]->below_target ?? 0;
+            $stats['above_target'] = $achievementQuery->above_target ?? 0;
+            $stats['below_target'] = $achievementQuery->below_target ?? 0;
 
             Log::info("Stats calculated", ['stats' => $stats]);
 
-            // Get chart data
-            $chartQuery = DB::select("
-                SELECT 
-                    DATE_FORMAT(date, '%M %Y') as month_year,
-                    MONTH(date) as month_num,
-                    ROUND(AVG(achievement_percentage), 2) as avg_achievement
-                FROM monthly_indicator_data
-                WHERE YEAR(date) = YEAR(CURRENT_DATE())
-                GROUP BY month_year, MONTH(date)
-                ORDER BY MONTH(date) ASC
-            ");
+            // Generate array of all months in current year
+            $allMonths = $this->generateMonthsArray($currentYear);
 
-            $labels = array_column($chartQuery, 'month_year');
-            $data = array_column($chartQuery, 'avg_achievement');
+            // Create a CTE (Common Table Expression) for monthly averages
+            $monthlyData = DB::table('monthly_indicator_data as m')
+                ->join('indicators as i', 'm.indicator_id', '=', 'i.id')
+                ->select(
+                    DB::raw('EXTRACT(MONTH FROM date) as month_num'),
+                    DB::raw('TO_CHAR(date, \'Month YYYY\') as month_year'),
+                    DB::raw('ROUND(AVG(achievement_percentage)::numeric, 2) as avg_achievement'),
+                    DB::raw('STRING_AGG(CONCAT(i.name, \':\', ROUND(achievement_percentage::numeric, 2)), \'|\') as indicator_details')
+                )
+                ->whereYear('date', $currentYear);
+
+            if ($unitId) {
+                $monthlyData->where('i.unit_id', $unitId);
+            }
+
+            $monthlyData = $monthlyData
+                ->groupBy(
+                    DB::raw('EXTRACT(MONTH FROM date)'),
+                    DB::raw('TO_CHAR(date, \'Month YYYY\')')
+                )
+                ->get();
+
+            // Merge actual data with all months array
+            $mergedData = collect($allMonths)->map(function($month) use ($monthlyData) {
+                $actualData = $monthlyData->first(function($item) use ($month) {
+                    return $item->month_num == $month['month_num'];
+                });
+
+                if ($actualData) {
+                    $month['avg_achievement'] = (float)$actualData->avg_achievement;
+                    $month['indicator_details'] = $actualData->indicator_details;
+                }
+
+                return $month;
+            })->sortBy('month_num');
+
+            // Format final data
+            foreach ($mergedData as $item) {
+                $labels[] = $item['month_year'];
+                $data[] = $item['avg_achievement'];
+                
+                // Parse indicator details
+                $itemDetails = [];
+                if (!empty($item['indicator_details'])) {
+                    $itemDetails = collect(explode('|', $item['indicator_details']))
+                        ->map(function($detail) {
+                            $parts = explode(':', $detail);
+                            return [
+                                'name' => $parts[0] ?? '',
+                                'value' => isset($parts[1]) ? (float)$parts[1] : 0
+                            ];
+                        })
+                        ->sortByDesc('value')
+                        ->values()
+                        ->toArray();
+                }
+                $details[] = $itemDetails;
+            }
 
             Log::info("Chart data prepared", [
                 'labels' => $labels,
-                'data' => $data
+                'data' => $data,
+                'details' => $details
             ]);
 
         } catch (\Exception $e) {
@@ -115,6 +198,6 @@ class DashboardController extends BaseController
         ]);
 
         // Always return view with data, whether it succeeded or failed
-        return view('dashboard', compact('stats', 'labels', 'data', 'error', 'debug'));
+        return view('dashboard', compact('stats', 'labels', 'data', 'details', 'error', 'debug'));
     }
 } 

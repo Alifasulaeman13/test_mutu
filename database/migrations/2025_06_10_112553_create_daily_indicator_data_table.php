@@ -20,9 +20,9 @@ return new class extends Migration
             $table->decimal('achievement_percentage', 5, 2)->nullable()->comment('Persentase pencapaian');
             $table->timestamps();
             
-            // Generated columns for easy querying
-            $table->integer('month')->storedAs('MONTH(date)');
-            $table->integer('year')->storedAs('YEAR(date)');
+            // Generated columns for easy querying using PostgreSQL's EXTRACT function
+            $table->integer('month')->storedAs('EXTRACT(MONTH FROM date)');
+            $table->integer('year')->storedAs('EXTRACT(YEAR FROM date)');
             
             // Unique constraint to prevent duplicate entries
             $table->unique(['indicator_id', 'date'], 'unique_daily_measurement');
